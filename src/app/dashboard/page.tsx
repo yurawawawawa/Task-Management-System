@@ -62,9 +62,9 @@ export default async function DashboardPage() {
                   <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-600 group-hover:bg-black group-hover:text-white transition-colors">
                     <LayoutGrid className="w-5 h-5" />
                   </div>
-                  <button className="text-gray-400 hover:text-black transition-colors p-1" onClick={(e) => e.preventDefault()}>
+                  <div className="text-gray-400 hover:text-black transition-colors p-1">
                     <MoreHorizontal className="w-5 h-5" />
-                  </button>
+                  </div>
                 </div>
 
                 <h3 className="text-lg font-bold text-black mb-1 tracking-tight truncate">
