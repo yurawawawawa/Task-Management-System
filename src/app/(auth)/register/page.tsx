@@ -96,7 +96,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading || !name || !email || !password}
-          className="w-full bg-black text-white py-2.5 px-4 rounded-xl font-medium hover:bg-gray-800 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] mt-2 flex items-center justify-center"
+          className="w-full bg-black text-white py-2.5 px-4 rounded-xl font-medium hover:bg-black transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] mt-2 flex items-center justify-center"
         >
           {loading ? (
             <>
