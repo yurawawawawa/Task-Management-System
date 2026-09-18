@@ -14,18 +14,18 @@ export default async function DashboardPage() {
     .all();
 
   return (
-    <div className="animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-10 gap-4">
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-12 gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-black mb-2">Projects</h1>
-          <p className="text-gray-500 text-sm">Create and manage your workspaces and tasks.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-black mb-2">Overview</h1>
+          <p className="text-gray-500 text-sm">Select a project to manage its tasks.</p>
         </div>
         <Link
           href="/dashboard/projects/new"
-          className="inline-flex items-center justify-center bg-black text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition-all shadow-sm active:scale-95"
+          className="inline-flex items-center justify-center bg-black text-white px-5 py-2.5 rounded-xl font-medium text-sm hover:bg-gray-800 transition-all shadow-sm active:scale-[0.98]"
         >
           <FolderPlus className="w-4 h-4 mr-2" />
-          New Project
+          Create Project
         </Link>
       </div>
 
