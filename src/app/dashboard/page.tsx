@@ -7,11 +7,10 @@ export default async function DashboardPage() {
   if (!user) return null; // Redirect handled by layout
 
   // Ambil semua projects milik user beserta jumlah task di dalamnya
+  // Prisma 8 menggunakan .include('relationName') bukan object { relationName: true }
   const projects = await db.orm.public.Project
     .where({ userId: user.id })
-    .include({
-      tasks: true, // we include tasks just to count them for the UI
-    })
+    .include('tasks')
     .orderBy({ createdAt: 'desc' })
     .all();
 
