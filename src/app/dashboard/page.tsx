@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   const projects = await db.orm.public.Project
     .where({ userId: user.id })
     .include('tasks')
-    .orderBy({ createdAt: 'desc' })
+    .orderBy(p => p.createdAt.desc())
     .all();
 
   return (

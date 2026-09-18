@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
     const tasks = await db.orm.public.Task
       .where(filters)
-      .orderBy({ createdAt: 'desc' })
+      .orderBy(t => t.createdAt.desc())
       .all();
 
     return NextResponse.json({ tasks });

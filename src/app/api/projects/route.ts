@@ -13,7 +13,7 @@ export async function GET() {
 
     const projects = await db.orm.public.Project
       .where({ userId: user.id })
-      .orderBy({ createdAt: 'desc' })
+      .orderBy(p => p.createdAt.desc())
       .all();
 
     return NextResponse.json({ projects });
