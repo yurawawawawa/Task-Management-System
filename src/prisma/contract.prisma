@@ -1,0 +1,97 @@
+// Taskora — Phase 1 MVP Database Schema
+// Database: Supabase PostgreSQL
+// Auth: Supabase Auth (auth.users managed by Supabase)
+// use prisma-8
+
+// ============================================
+// Profile
+// ============================================
+// Extends Supabase auth.users with application data.
+// The `id` matches auth.users.id (UUID from Supabase Auth).
+// We don't store passwords — Supabase handles that.
+
+model Profile {
+  id        Uuid     @id
+  name      String
+  email     String   @unique
+  createdAt TimestamptzString @default(now()) @map("created_at")
+  updatedAt temporal.updatedAtString() @map("updated_at")
+
+  // Relations
+  projects Project[]
+  tasks    Task[]
+
+  @@map("profiles")
+}
+
+// ============================================
+// Project
+// ============================================
+// A project belongs to one user and can contain multiple tasks.
+// When a project is deleted, all its tasks are cascade deleted.
+
+model Project {
+  id          Uuid     @id @default(uuid())
+  userId      Uuid     @map("user_id")
+  name        String
+  description String?
+  createdAt   TimestamptzString @default(now()) @map("created_at")
+  updatedAt   temporal.updatedAtString() @map("updated_at")
+
+  // Relations
+  user  Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  // Indexes
+  @@index([userId])
+  @@map("projects")
+}
+
+// ============================================
+// Task
+// ============================================
+// A task belongs to one user and optionally to a project.
+// Task has userId directly for fast ownership queries
+// without needing to JOIN through projects.
+
+model Task {
+  id          Uuid         @id @default(uuid())
+  userId      Uuid         @map("user_id")
+  projectId   Uuid?        @map("project_id")
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     TimestamptzString? @map("due_date")
+  createdAt   TimestamptzString @default(now()) @map("created_at")
+  updatedAt   temporal.updatedAtString() @map("updated_at")
+
+  // Relations
+  user    Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, priority])
+  @@index([projectId])
+  @@map("tasks")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
