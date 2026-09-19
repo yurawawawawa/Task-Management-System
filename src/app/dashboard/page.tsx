@@ -1,6 +1,7 @@
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
 import Link from 'next/link';
+import { ProductivityMap } from './ProductivityMap';
 import { FolderPlus, MoreHorizontal, ArrowRight, LayoutGrid } from 'lucide-react';
 
 export default async function DashboardPage() {
@@ -47,6 +48,7 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <ProductivityMap />
           {projects.map((project) => {
             const completedTasks = project.tasks.filter((t: any) => t.status === 'DONE').length;
             const totalTasks = project.tasks.length;
