@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { db } from '@/prisma/db';
 import Link from 'next/link';
 import LogoutButton from './LogoutButton';
+import MobileNav from './MobileNav';
 
 export default async function DashboardLayout({
   children,
@@ -26,16 +27,17 @@ export default async function DashboardLayout({
 
       {/* Top Navigation (Vercel/Linear style) */}
       <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-[#FAFAFA]/80 border-b border-gray-200/80">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center lg:gap-8">
+            <MobileNav />
+            <Link href="/dashboard" className="flex items-center gap-2 transition-opacity hover:opacity-80 min-h-[44px] md:min-h-0">
               <div className="w-7 h-7 bg-black text-white rounded-[6px] flex items-center justify-center font-bold text-sm shadow-sm">
                 T
               </div>
-              <span className="font-bold tracking-tight text-black">Taskora</span>
+              <span className="font-bold tracking-tight text-black hidden sm:block">Taskora</span>
             </Link>
             
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium ml-8">
               <Link href="/dashboard" className="text-black relative after:absolute after:bottom-[-21px] after:left-0 after:w-full after:h-[2px] after:bg-black">
                 Projects
               </Link>
@@ -48,22 +50,22 @@ export default async function DashboardLayout({
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <div className="hidden md:flex flex-col items-end mr-2">
               <span className="text-sm font-semibold text-black leading-none">{profile?.name}</span>
               <span className="text-xs text-gray-500 mt-1">{authUser.email}</span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-gray-800 to-black text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-gray-800 to-black text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white shrink-0">
               {profile?.name?.[0]?.toUpperCase() || 'U'}
             </div>
-            <div className="w-px h-6 bg-gray-200 mx-1 hidden md:block"></div>
+            <div className="w-px h-6 bg-gray-200 mx-1 hidden sm:block"></div>
             <LogoutButton />
           </div>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-12 md:py-16">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-16">
         {children}
       </main>
     </div>

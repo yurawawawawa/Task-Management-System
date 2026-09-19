@@ -22,7 +22,7 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/dashboard/projects/new"
-          className="inline-flex items-center justify-center bg-black text-white px-5 py-2.5 rounded-xl font-medium text-sm hover:bg-gray-800 transition-all shadow-sm active:scale-[0.98]"
+          className="inline-flex items-center justify-center bg-black text-white px-5 h-11 md:h-9 rounded-xl font-medium text-sm hover:bg-gray-800 transition-all shadow-sm active:scale-[0.98]"
         >
           <FolderPlus className="w-4 h-4 mr-2" />
           Create Project
@@ -40,7 +40,7 @@ export default async function DashboardPage() {
           </p>
           <Link
             href="/dashboard/projects/new"
-            className="inline-flex items-center justify-center bg-white text-black border border-gray-200 px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+            className="inline-flex items-center justify-center bg-white text-black border border-gray-200 px-5 h-11 md:h-9 rounded-lg font-medium text-sm hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
           >
             Create your first project
           </Link>
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
                   <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-600 group-hover:bg-black group-hover:text-white transition-colors">
                     <LayoutGrid className="w-5 h-5" />
                   </div>
-                  <div className="text-gray-400 hover:text-black transition-colors p-1">
+                  <div className="text-gray-400 hover:text-black transition-colors p-2.5 -mr-2 -mt-2 rounded-lg hover:bg-gray-50 flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] md:p-1.5" aria-label="More options">
                     <MoreHorizontal className="w-5 h-5" />
                   </div>
                 </div>

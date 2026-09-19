@@ -60,7 +60,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black focus:bg-white text-black transition-all placeholder:text-gray-400"
+            className="w-full px-4 h-11 md:h-9 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black focus:bg-white text-black transition-all placeholder:text-gray-400"
             placeholder="you@example.com"
           />
         </div>
@@ -68,7 +68,7 @@ export default function LoginPage() {
         <div className="space-y-1.5">
           <div className="flex justify-between items-center">
             <label className="block text-sm font-semibold text-black">Password</label>
-            <Link href="#" className="text-xs font-medium text-gray-500 hover:text-black transition-colors">
+            <Link href="#" className="inline-flex items-center text-xs font-medium text-gray-500 hover:text-black transition-colors min-h-[44px] md:min-h-0">
               Forgot password?
             </Link>
           </div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black focus:bg-white text-black transition-all placeholder:text-gray-400"
+            className="w-full px-4 h-11 md:h-9 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black focus:bg-white text-black transition-all placeholder:text-gray-400"
             placeholder="••••••••"
           />
         </div>
@@ -85,7 +85,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading || !email || !password}
-          className="w-full bg-black text-white py-2.5 px-4 rounded-xl font-medium hover:bg-black transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] mt-2 flex items-center justify-center"
+          className="w-full bg-black text-white h-11 md:h-9 px-4 rounded-xl font-medium hover:bg-black transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] mt-2 flex items-center justify-center"
         >
           {loading ? (
             <>
@@ -98,7 +98,7 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <div className="mt-8 text-center text-sm text-gray-500">
+      <div className="mt-8 text-center text-sm text-gray-500 py-2 md:py-0">
         Don't have an account?{' '}
         <Link href="/register" className="text-black font-semibold hover:underline decoration-gray-300 underline-offset-4 transition-all">
           Sign up for free
