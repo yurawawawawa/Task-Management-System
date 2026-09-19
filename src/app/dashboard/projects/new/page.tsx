@@ -37,7 +37,7 @@ export default function NewProjectPage() {
 
   return (
     <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pt-8">
-      <Link href="/dashboard" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-black transition-colors mb-8">
+      <Link href="/dashboard" className="inline-flex items-center min-h-[44px] md:min-h-0 text-sm font-medium text-gray-500 hover:text-black transition-colors mb-8">
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back to projects
       </Link>
@@ -87,14 +87,14 @@ export default function NewProjectPage() {
           <div className="pt-6 flex items-center justify-end border-t border-gray-100 gap-3">
             <Link
               href="/dashboard"
-              className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-black transition-colors"
+              className="inline-flex items-center justify-center px-5 min-h-[44px] md:min-h-0 text-sm font-medium text-gray-600 hover:text-black transition-colors"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="inline-flex items-center justify-center bg-black text-white px-6 py-2.5 rounded-xl font-medium text-sm hover:bg-gray-800 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+              className="inline-flex items-center justify-center bg-black text-white px-6 h-11 md:h-9 rounded-xl font-medium text-sm hover:bg-gray-800 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
             >
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Create Project
