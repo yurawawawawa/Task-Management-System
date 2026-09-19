@@ -3,6 +3,31 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Primary Palette (#0A93C7) */
+  --primary: #0a93c7;
+  --primary-hover: #087aa5;
+  --primary-foreground: #ffffff;
+  --primary-tint-1: #15aae3;
+  --primary-tint-2: #8ad6f4;
+  --primary-tint-3: #e1f5fd;
+
+  /* Semantic Roles */
+  --success: var(--color-emerald-600);
+  --success-foreground: #ffffff;
+  --danger: var(--color-red-600);
+  --danger-foreground: #ffffff;
+  --danger-muted: var(--color-red-50);
+  --danger-border: var(--color-red-100);
+  --info: var(--color-blue-600);
+  --info-foreground: #ffffff;
+
+  /* UI Tokens */
+  --muted: var(--color-gray-50);
+  --muted-foreground: var(--color-gray-500);
+  --muted-hover: var(--color-gray-100);
+  --border: var(--color-gray-200);
+  --border-light: var(--color-gray-100);
 }
 
 @theme inline {
@@ -10,6 +35,28 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-tint-1: var(--primary-tint-1);
+  --color-primary-tint-2: var(--primary-tint-2);
+  --color-primary-tint-3: var(--primary-tint-3);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-muted: var(--danger-muted);
+  --color-danger-border: var(--danger-border);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted-hover: var(--muted-hover);
+  --color-border: var(--border);
+  --color-border-light: var(--border-light);
 }
 
 body {

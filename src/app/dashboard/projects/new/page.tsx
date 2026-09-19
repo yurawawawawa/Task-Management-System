@@ -37,17 +37,17 @@ export default function NewProjectPage() {
 
   return (
     <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pt-8">
-      <Link href="/dashboard" className="inline-flex items-center min-h-[44px] md:min-h-0 text-sm font-medium text-gray-500 hover:text-black transition-colors mb-8">
+      <Link href="/dashboard" className="inline-flex items-center min-h-[44px] md:min-h-0 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-8">
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back to projects
       </Link>
 
-      <div className="bg-white p-8 md:p-10 rounded-2xl border border-gray-200 shadow-sm">
-        <h1 className="text-2xl font-bold text-black mb-2 tracking-tight">Create a new project</h1>
-        <p className="text-gray-500 text-sm mb-8">Projects let you organize tasks, track progress, and manage your team's work in one place.</p>
+      <div className="bg-white p-8 md:p-10 rounded-2xl border border-border shadow-sm">
+        <h1 className="text-2xl font-bold text-foreground mb-2 tracking-tight">Create a new project</h1>
+        <p className="text-muted-foreground text-sm mb-8">Projects let you organize tasks, track progress, and manage your team's work in one place.</p>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm mb-8 border border-red-100 font-medium flex items-start">
+          <div className="bg-danger-muted text-danger p-4 rounded-xl text-sm mb-8 border border-danger-border font-medium flex items-start">
             <span className="shrink-0 mr-2">⚠️</span>
             {error}
           </div>
@@ -55,8 +55,8 @@ export default function NewProjectPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-black">
-              Project Name <span className="text-gray-400 font-normal">*</span>
+            <label className="block text-sm font-semibold text-foreground">
+              Project Name <span className="text-muted-foreground/80 font-normal">*</span>
             </label>
             <input
               type="text"
@@ -65,36 +65,36 @@ export default function NewProjectPage() {
               required
               maxLength={100}
               autoFocus
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black focus:bg-white text-black transition-all placeholder:text-gray-400"
+              className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-primary focus:bg-white text-foreground transition-all placeholder:text-muted-foreground/80"
               placeholder="e.g., Q4 Marketing Campaign"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-black">
-              Description <span className="text-gray-400 font-normal">(Optional)</span>
+            <label className="block text-sm font-semibold text-foreground">
+              Description <span className="text-muted-foreground/80 font-normal">(Optional)</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               maxLength={500}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black focus:bg-white text-black transition-all placeholder:text-gray-400 resize-none"
+              className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-primary focus:bg-white text-foreground transition-all placeholder:text-muted-foreground/80 resize-none"
               placeholder="Briefly describe the goals of this project..."
             />
           </div>
 
-          <div className="pt-6 flex items-center justify-end border-t border-gray-100 gap-3">
+          <div className="pt-6 flex items-center justify-end border-t border-border-light gap-3">
             <Link
               href="/dashboard"
-              className="inline-flex items-center justify-center px-5 min-h-[44px] md:min-h-0 text-sm font-medium text-gray-600 hover:text-black transition-colors"
+              className="inline-flex items-center justify-center px-5 min-h-[44px] md:min-h-0 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="inline-flex items-center justify-center bg-black text-white px-6 h-11 md:h-9 rounded-xl font-medium text-sm hover:bg-gray-800 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+              className="inline-flex items-center justify-center bg-primary text-primary-foreground px-6 h-11 md:h-9 rounded-xl font-medium text-sm hover:bg-primary-hover transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
             >
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Create Project

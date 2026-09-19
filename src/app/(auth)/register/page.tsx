@@ -44,12 +44,12 @@ export default function RegisterPage() {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
       <div className="text-center mb-8">
-        <h1 className="text-xl font-bold text-black tracking-tight mb-1">Create an account</h1>
-        <p className="text-sm text-gray-500">Start managing your projects with Taskora</p>
+        <h1 className="text-xl font-bold text-foreground tracking-tight mb-1">Create an account</h1>
+        <p className="text-sm text-muted-foreground">Start managing your projects with Taskora</p>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm mb-6 border border-red-100 font-medium flex items-start">
+        <div className="bg-danger-muted text-danger p-3 rounded-xl text-sm mb-6 border border-danger-border font-medium flex items-start">
           <span className="shrink-0 mr-2">⚠️</span>
           {error}
         </div>
@@ -57,38 +57,38 @@ export default function RegisterPage() {
 
       <form onSubmit={handleRegister} className="space-y-4">
         <div className="space-y-1.5">
-          <label className="block text-sm font-semibold text-black">Full Name</label>
+          <label className="block text-sm font-semibold text-foreground">Full Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="w-full px-4 h-11 md:h-9 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black focus:bg-white text-black transition-all placeholder:text-gray-400"
+            className="w-full px-4 h-11 md:h-9 bg-muted border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-primary focus:bg-white text-foreground transition-all placeholder:text-muted-foreground/80"
             placeholder="John Doe"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-sm font-semibold text-black">Email address</label>
+          <label className="block text-sm font-semibold text-foreground">Email address</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 h-11 md:h-9 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black focus:bg-white text-black transition-all placeholder:text-gray-400"
+            className="w-full px-4 h-11 md:h-9 bg-muted border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-primary focus:bg-white text-foreground transition-all placeholder:text-muted-foreground/80"
             placeholder="you@example.com"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-sm font-semibold text-black">Password</label>
+          <label className="block text-sm font-semibold text-foreground">Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full px-4 h-11 md:h-9 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black focus:bg-white text-black transition-all placeholder:text-gray-400"
+            className="w-full px-4 h-11 md:h-9 bg-muted border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-primary focus:bg-white text-foreground transition-all placeholder:text-muted-foreground/80"
             placeholder="Min. 6 characters"
           />
         </div>
@@ -96,7 +96,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading || !name || !email || !password}
-          className="w-full bg-black text-white h-11 md:h-9 px-4 rounded-xl font-medium hover:bg-black transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] mt-2 flex items-center justify-center"
+          className="w-full bg-primary text-primary-foreground h-11 md:h-9 px-4 rounded-xl font-medium hover:bg-primary transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] mt-2 flex items-center justify-center"
         >
           {loading ? (
             <>
@@ -109,9 +109,9 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <div className="mt-8 text-center text-sm text-gray-500 py-2 md:py-0">
+      <div className="mt-8 text-center text-sm text-muted-foreground py-2 md:py-0">
         Already have an account?{' '}
-        <Link href="/login" className="text-black font-semibold hover:underline decoration-gray-300 underline-offset-4 transition-all">
+        <Link href="/login" className="text-foreground font-semibold hover:underline decoration-gray-300 underline-offset-4 transition-all">
           Log in instead
         </Link>
       </div>

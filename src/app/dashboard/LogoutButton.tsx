@@ -19,7 +19,7 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="text-gray-400 hover:text-black transition-colors p-2.5 md:p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px]"
+      className="text-muted-foreground/80 hover:text-foreground transition-colors p-2.5 md:p-2 rounded-lg hover:bg-muted-hover flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px]"
       title="Sign out"
       aria-label="Sign out"
     >
