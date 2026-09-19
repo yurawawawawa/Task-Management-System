@@ -21,10 +21,10 @@ export function ProductivityMap() {
           </p>
         </div>
         <button 
-          className="text-muted-foreground/80 hover:text-foreground transition-colors p-2.5 -mr-2 -mt-2 rounded-lg hover:bg-muted flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] md:p-1.5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
+          className="text-muted-foreground/80 hover:text-foreground transition-colors p-2.5 -mr-2 -mt-2 rounded-lg hover:bg-muted flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] md:p-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" 
           aria-label="More options"
         >
-          <MoreHorizontal className="w-5 h-5" />
+          <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
         </button>
       </div>
 

@@ -37,6 +37,7 @@ export function StreakFooter({ stats }: Props) {
               size={flameSize} 
               className={`${flameColor} transition-all duration-300 ease-in-out`} 
               style={{ fill: flameFill }} 
+              aria-hidden="true"
             />
           </div>
           <span className="font-semibold text-foreground">

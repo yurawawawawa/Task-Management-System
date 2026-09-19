@@ -55,10 +55,11 @@ export default function NewProjectPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-foreground">
+            <label htmlFor="name" className="block text-sm font-semibold text-foreground">
               Project Name <span className="text-muted-foreground/80 font-normal">*</span>
             </label>
             <input
+              id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -71,10 +72,11 @@ export default function NewProjectPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-foreground">
+            <label htmlFor="description" className="block text-sm font-semibold text-foreground">
               Description <span className="text-muted-foreground/80 font-normal">(Optional)</span>
             </label>
             <textarea
+              id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}

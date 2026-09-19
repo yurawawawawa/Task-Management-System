@@ -69,8 +69,8 @@ export default function RegisterPage() {
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-sm font-semibold text-foreground">Email address</label>
-          <input
+          <label htmlFor="email" className="block text-sm font-semibold text-foreground">Email address</label>
+          <input id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -81,8 +81,8 @@ export default function RegisterPage() {
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-sm font-semibold text-foreground">Password</label>
-          <input
+          <label htmlFor="password" className="block text-sm font-semibold text-foreground">Password</label>
+          <input id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

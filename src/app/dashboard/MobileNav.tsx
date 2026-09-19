@@ -48,19 +48,19 @@ export default function MobileNav() {
       {/* Hamburger — 44×44 touch target */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative text-muted-foreground hover:text-foreground hover:bg-muted-hover rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px] -ml-2 mr-2"
+        className="relative text-muted-foreground hover:text-foreground hover:bg-muted-hover rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px] -ml-2 mr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         aria-label={isOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={isOpen}
         aria-controls="mobile-drawer"
       >
         <span className="sr-only">{isOpen ? 'Close' : 'Menu'}</span>
-        {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        {isOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
       </button>
 
       {/* Backdrop + Drawer */}
       {/* Render both in DOM for transition; control visibility via classes */}
       <div
-        className={`fixed inset-0 z-50 transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 transition-opacity duration-300 motion-reduce:transition-none ${
           isOpen
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
@@ -80,7 +80,7 @@ export default function MobileNav() {
           role="dialog"
           aria-modal="true"
           aria-label="Navigation menu"
-          className={`absolute top-0 left-0 h-full w-[280px] max-w-[85vw] bg-background border-r border-border/80 shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+          className={`absolute top-0 left-0 h-full w-[280px] max-w-[85vw] bg-background border-r border-border/80 shadow-2xl flex flex-col transition-transform duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -96,10 +96,10 @@ export default function MobileNav() {
             </div>
             <button
               onClick={close}
-              className="text-muted-foreground/80 hover:text-foreground hover:bg-muted-hover rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px] -mr-2"
+              className="text-muted-foreground/80 hover:text-foreground hover:bg-muted-hover rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px] -mr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               aria-label="Close menu"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -116,13 +116,13 @@ export default function MobileNav() {
                     key={item.label}
                     href={item.href}
                     onClick={close}
-                    className={`flex items-center gap-3 min-h-[44px] px-3 rounded-xl font-medium text-sm transition-colors ${
+                    className={`flex items-center gap-3 min-h-[44px] px-3 rounded-xl font-medium text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
                       isActive
                         ? 'bg-primary text-primary-foreground'
                         : 'text-muted-foreground hover:bg-muted-hover hover:text-foreground active:bg-muted-hover'
                     }`}
                   >
-                    <item.icon className="w-[18px] h-[18px] shrink-0" />
+                    <item.icon className="w-[18px] h-[18px] shrink-0" aria-hidden="true" />
                     {item.label}
                   </Link>
                 );

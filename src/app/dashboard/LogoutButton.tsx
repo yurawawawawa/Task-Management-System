@@ -19,11 +19,11 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="text-muted-foreground/80 hover:text-foreground transition-colors p-2.5 md:p-2 rounded-lg hover:bg-muted-hover flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px]"
+      className="text-muted-foreground/80 hover:text-foreground transition-colors p-2.5 md:p-2 rounded-lg hover:bg-muted-hover flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       title="Sign out"
       aria-label="Sign out"
     >
-      <LogOut className="w-5 h-5" />
+      <LogOut className="w-5 h-5" aria-hidden="true" />
     </button>
   );
 }

@@ -37,8 +37,10 @@ export default async function DashboardLayout({
               <span className="font-bold tracking-tight text-foreground hidden sm:block">Taskora</span>
             </Link>
             
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium ml-8">
-              <Link href="/dashboard" className="text-foreground relative after:absolute after:bottom-[-21px] after:left-0 after:w-full after:h-[2px] after:bg-primary">
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium ml-8" aria-label="Main Navigation">
+              <Link href="/dashboard" className="text-foreground relative after:absolute after:bottom-[-21px] after:left-0 after:w-full after:h-[2px] after:bg-primary"
+                aria-current="page"
+              >
                 Projects
               </Link>
               <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">

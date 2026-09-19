@@ -100,7 +100,7 @@ export function ContributionGrid({ data, todayStr }: Props) {
                     tabIndex={0}
                     aria-label={tooltipText}
                     title={tooltipText}
-                    className={`w-3 h-3 rounded-sm transition-colors duration-200 ease-in-out hover:ring-1 hover:ring-muted-foreground hover:ring-offset-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${bgColor} ${outline}`}
+                    className={`w-3 h-3 rounded-sm transition-colors duration-200 ease-in-out motion-reduce:transition-none hover:ring-1 hover:ring-muted-foreground hover:ring-offset-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${bgColor} ${outline}`}
                   />
                 );
               })}
