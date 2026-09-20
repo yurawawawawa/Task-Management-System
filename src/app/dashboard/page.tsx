@@ -48,7 +48,7 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <ProductivityMap />
+          <ProductivityMap userId={user.id} />
           {projects.map((project) => {
             const completedTasks = project.tasks.filter((t: any) => t.status === 'DONE').length;
             const totalTasks = project.tasks.length;
