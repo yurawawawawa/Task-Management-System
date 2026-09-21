@@ -46,7 +46,7 @@ export async function PATCH(
     const body = await request.json();
     const result = updateTaskSchema.safeParse(body);
     if (!result.success) {
-      return NextResponse.json({ error: 'Validation failed', details: result.error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Validation failed', details: result.error.issues }, { status: 400 });
     }
 
     const { projectId } = result.data;
@@ -65,10 +65,7 @@ export async function PATCH(
       }
     }
 
-    const updatedTask = await db.orm.public.Task.update({
-      where: { id },
-      data: updateData
-    });
+    const updatedTask = await db.orm.public.Task.where({ id }).update(updateData);
 
     return NextResponse.json({ message: 'Task updated successfully', task: updatedTask });
   } catch (error: any) {
@@ -90,9 +87,7 @@ export async function DELETE(
     if (task === null) return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     if (task === false) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    await db.orm.public.Task.delete({
-      where: { id }
-    });
+    await db.orm.public.Task.where({ id }).delete();
 
     return NextResponse.json({ message: 'Task deleted successfully' });
   } catch (error: any) {

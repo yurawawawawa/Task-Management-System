@@ -54,7 +54,7 @@ export async function PATCH(
     const body = await request.json();
     const result = updateProjectSchema.safeParse(body);
     if (!result.success) {
-      return NextResponse.json({ error: 'Validation failed', details: result.error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Validation failed', details: result.error.issues }, { status: 400 });
     }
 
     // Hanya ambil field yang ada isinya (defined)
@@ -62,10 +62,7 @@ export async function PATCH(
     if (result.data.name !== undefined) updateData.name = result.data.name;
     if (result.data.description !== undefined) updateData.description = result.data.description;
 
-    const updatedProject = await db.orm.public.Project.update({
-      where: { id },
-      data: updateData
-    });
+    const updatedProject = await db.orm.public.Project.where({ id }).update(updateData);
 
     return NextResponse.json({ message: 'Project updated successfully', project: updatedProject });
   } catch (error: any) {
@@ -88,9 +85,7 @@ export async function DELETE(
     if (project === null) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     if (project === false) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    await db.orm.public.Project.delete({
-      where: { id }
-    });
+    await db.orm.public.Project.where({ id }).delete();
 
     return NextResponse.json({ message: 'Project and all associated tasks deleted successfully' });
   } catch (error: any) {

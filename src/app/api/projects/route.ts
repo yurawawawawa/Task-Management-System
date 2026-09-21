@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const result = createProjectSchema.safeParse(body);
     if (!result.success) {
-      return NextResponse.json({ error: 'Validation failed', details: result.error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Validation failed', details: result.error.issues }, { status: 400 });
     }
 
     const { name, description } = result.data;
