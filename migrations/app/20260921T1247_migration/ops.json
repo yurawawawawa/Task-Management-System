@@ -1,0 +1,368 @@
+[
+  {
+    "id": "table.project_members",
+    "label": "Create table \"project_members\"",
+    "summary": "Creates table \"project_members\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "project_members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"project_members\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"project_members\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"project_members\"",
+        "sql": "CREATE TABLE \"public\".\"project_members\" (\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"profile_id\" uuid NOT NULL,\n  \"project_id\" uuid NOT NULL,\n  \"role\" text DEFAULT 'MEMBER' NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"project_members\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"project_members\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.tasks.assignee_id",
+    "label": "Add column \"assignee_id\" to \"tasks\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "assignee_id",
+        "table": "tasks"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"assignee_id\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tasks",
+          "assignee_id"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"assignee_id\"",
+        "sql": "ALTER TABLE \"public\".\"tasks\" ADD COLUMN \"assignee_id\" uuid"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"assignee_id\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tasks",
+          "assignee_id"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.project_members.project_members_project_id_profile_id_key",
+    "label": "Add unique constraint on \"project_members\" (project_id, profile_id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "project_members_project_id_profile_id_key",
+        "table": "project_members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"project_members_project_id_profile_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "project_members_project_id_profile_id_key",
+          "public",
+          "\"public\".\"project_members\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"project_members_project_id_profile_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"project_members\" ADD CONSTRAINT \"project_members_project_id_profile_id_key\" UNIQUE (\"project_id\", \"profile_id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"project_members_project_id_profile_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "project_members_project_id_profile_id_key",
+          "public",
+          "\"public\".\"project_members\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.project_members.project_members_profile_id_idx_ff36b76a",
+    "label": "Create index \"project_members_profile_id_idx_ff36b76a\" on \"project_members\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "project_members_profile_id_idx_ff36b76a",
+        "table": "project_members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"project_members_profile_id_idx_ff36b76a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"project_members_profile_id_idx_ff36b76a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"project_members_profile_id_idx_ff36b76a\"",
+        "sql": "CREATE INDEX \"project_members_profile_id_idx_ff36b76a\" ON \"public\".\"project_members\" (\"profile_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"project_members_profile_id_idx_ff36b76a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"project_members_profile_id_idx_ff36b76a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.project_members.project_members_project_id_idx_6ad92603",
+    "label": "Create index \"project_members_project_id_idx_6ad92603\" on \"project_members\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "project_members_project_id_idx_6ad92603",
+        "table": "project_members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"project_members_project_id_idx_6ad92603\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"project_members_project_id_idx_6ad92603\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"project_members_project_id_idx_6ad92603\"",
+        "sql": "CREATE INDEX \"project_members_project_id_idx_6ad92603\" ON \"public\".\"project_members\" (\"project_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"project_members_project_id_idx_6ad92603\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"project_members_project_id_idx_6ad92603\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.tasks.tasks_assignee_id_idx_d45afe9c",
+    "label": "Create index \"tasks_assignee_id_idx_d45afe9c\" on \"tasks\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tasks_assignee_id_idx_d45afe9c",
+        "table": "tasks"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tasks_assignee_id_idx_d45afe9c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tasks_assignee_id_idx_d45afe9c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"tasks_assignee_id_idx_d45afe9c\"",
+        "sql": "CREATE INDEX \"tasks_assignee_id_idx_d45afe9c\" ON \"public\".\"tasks\" (\"assignee_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tasks_assignee_id_idx_d45afe9c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tasks_assignee_id_idx_d45afe9c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.project_members.project_members_project_id_fkey",
+    "label": "Add foreign key \"project_members_project_id_fkey\" on \"project_members\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "project_members_project_id_fkey",
+        "table": "project_members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"project_members_project_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "project_members_project_id_fkey",
+          "public",
+          "\"public\".\"project_members\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"project_members_project_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"project_members\"\nADD CONSTRAINT \"project_members_project_id_fkey\"\nFOREIGN KEY (\"project_id\")\nREFERENCES \"public\".\"projects\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"project_members_project_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "project_members_project_id_fkey",
+          "public",
+          "\"public\".\"project_members\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.project_members.project_members_profile_id_fkey",
+    "label": "Add foreign key \"project_members_profile_id_fkey\" on \"project_members\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "project_members_profile_id_fkey",
+        "table": "project_members"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"project_members_profile_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "project_members_profile_id_fkey",
+          "public",
+          "\"public\".\"project_members\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"project_members_profile_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"project_members\"\nADD CONSTRAINT \"project_members_profile_id_fkey\"\nFOREIGN KEY (\"profile_id\")\nREFERENCES \"public\".\"profiles\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"project_members_profile_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "project_members_profile_id_fkey",
+          "public",
+          "\"public\".\"project_members\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.tasks.tasks_assignee_id_fkey",
+    "label": "Add foreign key \"tasks_assignee_id_fkey\" on \"tasks\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "tasks_assignee_id_fkey",
+        "table": "tasks"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"tasks_assignee_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tasks_assignee_id_fkey",
+          "public",
+          "\"public\".\"tasks\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"tasks_assignee_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"tasks\"\nADD CONSTRAINT \"tasks_assignee_id_fkey\"\nFOREIGN KEY (\"assignee_id\")\nREFERENCES \"public\".\"profiles\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"tasks_assignee_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tasks_assignee_id_fkey",
+          "public",
+          "\"public\".\"tasks\""
+        ]
+      }
+    ]
+  }
+]
