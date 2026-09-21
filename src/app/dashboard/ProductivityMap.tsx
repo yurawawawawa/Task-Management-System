@@ -48,7 +48,7 @@ export async function ProductivityMap({ userId }: { userId: string }) {
   const stats = computeStreaks(activities, todayStr);
 
   return (
-    <div className="group relative bg-white p-6 rounded-2xl border border-border hover:border-primary/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all flex flex-col h-full col-span-1 md:col-span-2 lg:col-span-3">
+    <div className="group relative bg-white p-6 rounded-2xl border border-border hover:border-primary/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all flex flex-col h-full col-span-1 md:col-span-2 lg:col-span-3 opacity-0 animate-fade-in-up animate-delay-100">
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>

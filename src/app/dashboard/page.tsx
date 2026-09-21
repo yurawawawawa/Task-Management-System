@@ -31,7 +31,7 @@ export default async function DashboardPage() {
       </div>
 
       {projects.length === 0 ? (
-        <div className="border border-dashed border-border rounded-2xl p-12 text-center flex flex-col items-center justify-center bg-white/50">
+        <div className="border border-dashed border-border rounded-2xl p-12 text-center flex flex-col items-center justify-center bg-white/50 opacity-0 animate-fade-in-up animate-delay-150">
           <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4 shadow-sm border border-border-light">
             <LayoutGrid className="w-8 h-8 text-muted-foreground/80" aria-hidden="true" />
           </div>
@@ -49,16 +49,25 @@ export default async function DashboardPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <ProductivityMap userId={user.id} />
-          {projects.map((project) => {
+          {projects.map((project, index) => {
             const completedTasks = project.tasks.filter((t: any) => t.status === 'DONE').length;
             const totalTasks = project.tasks.length;
             const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            const delayMap: Record<number, string> = {
+              0: 'animate-delay-150',
+              1: 'animate-delay-200',
+              2: 'animate-delay-250',
+              3: 'animate-delay-300',
+              4: 'animate-delay-400',
+            };
+            const delayClass = delayMap[index] || 'animate-delay-400';
 
             return (
               <Link
                 key={project.id}
                 href={`/dashboard/projects/${project.id}`}
-                className="group relative bg-white p-6 rounded-2xl border border-border hover:border-primary/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all flex flex-col h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className={`group relative bg-white p-6 rounded-2xl border border-border hover:border-primary/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all flex flex-col h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 opacity-0 animate-fade-in-up ${delayClass}`}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="w-10 h-10 rounded-lg bg-muted border border-border-light flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
