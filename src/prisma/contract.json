@@ -593,6 +593,28 @@
     "namespaces": {
       "public": {
         "entries": {
+          "rls": {
+            "profiles": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "profiles"
+            },
+            "project_members": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "project_members"
+            },
+            "projects": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "projects"
+            },
+            "tasks": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "tasks"
+            }
+          },
           "table": {
             "profiles": {
               "columns": {
@@ -1042,7 +1064,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "eb4ad87e1d0baa4720acab12423522c52342388a5ebd8eba8528dbde99310bea"
+    "storageHash": "7d238473a722416649917dd8ab23eb039ddcfbd21399f424d35925c2db78d4a0"
   },
   "execution": {
     "executionHash": "b0683859a5ce907afee1518d7e0867f371dee4efe433793a1bff7fbfac4e997c",

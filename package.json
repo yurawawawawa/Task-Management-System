@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@prisma/client": "^7.10.0",
+    "@prisma/orm-extension-supabase": "^8.0.0-rc.11",
     "@prisma/orm-postgres": "^8.0.0-rc.11",
     "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/ssr": "^0.12.7",
