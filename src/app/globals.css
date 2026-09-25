@@ -100,6 +100,146 @@ body {
   --ink: #1a2e1f;
 }
 
+/* ========================================================
+   Theme System: Retro Playful vs Minimalist Clean
+   ======================================================== */
+:root, [data-theme="retro"] {
+  --border-style: 3px solid #1a2e1f;
+  --shadow-style: 6px 6px 0px #1a2e1f;
+  --radius: 28px;
+
+  --theme-border-width: 3px;
+  --theme-border-color: #1a2e1f;
+  --theme-shadow: 6px 6px 0px #1a2e1f;
+  --theme-shadow-sm: 3px 3px 0px #1a2e1f;
+  --theme-shadow-lg: 10px 10px 0px #1a2e1f;
+  --theme-radius-xl: 28px;
+  --theme-radius-lg: 22px;
+  --theme-radius-pill: 9999px;
+  --theme-bg-main: #fbf3e0;
+  --theme-bg-dot: radial-gradient(rgba(26, 46, 31, 0.12) 2px, transparent 2px);
+  --theme-bg-size: 22px 22px;
+  --theme-heading-font: 'Fraunces', serif;
+  --theme-body-font: 'Alegreya Sans', sans-serif;
+  --theme-sidebar-bg: #1f4d2b;
+  --theme-sidebar-header-bg: #173e21;
+  --theme-sidebar-border: 3.5px solid #1a2e1f;
+  --theme-sidebar-text: #fbf3e0;
+  --theme-sidebar-text-muted: rgba(251, 243, 224, 0.75);
+  --theme-sidebar-active-bg: #bfe3f0;
+  --theme-sidebar-active-text: #1a2e1f;
+  --theme-sidebar-active-border: 2.5px solid #1a2e1f;
+  --theme-sidebar-active-shadow: 3px 3px 0px #1a2e1f;
+  --theme-widget-bg: #ffeed0;
+  --theme-widget-border: 3px solid #1a2e1f;
+  --theme-widget-shadow: 4px 4px 0px #1a2e1f;
+  --theme-col-todo-bg: #fff9ed;
+  --theme-col-progress-bg: #e6f4fa;
+  --theme-col-done-bg: #e8f7ec;
+  --theme-card-bg: #ffffff;
+}
+
+[data-theme="minimal"] {
+  --border-style: 1px solid #e2e8f0;
+  --shadow-style: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --radius: 16px;
+
+  --theme-border-width: 1px;
+  --theme-border-color: #e2e8f0;
+  --theme-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --theme-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --theme-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --theme-radius-xl: 16px;
+  --theme-radius-lg: 12px;
+  --theme-radius-pill: 10px;
+  --theme-bg-main: #f8fafc;
+  --theme-bg-dot: none;
+  --theme-bg-size: auto;
+  --theme-heading-font: var(--font-geist-sans), system-ui, sans-serif;
+  --theme-body-font: var(--font-geist-sans), system-ui, sans-serif;
+  --theme-sidebar-bg: #ffffff;
+  --theme-sidebar-header-bg: #ffffff;
+  --theme-sidebar-border: 1px solid #e2e8f0;
+  --theme-sidebar-text: #0f172a;
+  --theme-sidebar-text-muted: #64748b;
+  --theme-sidebar-active-bg: #f1f5f9;
+  --theme-sidebar-active-text: #0f172a;
+  --theme-sidebar-active-border: 1px solid #cbd5e1;
+  --theme-sidebar-active-shadow: none;
+  --theme-widget-bg: #f8fafc;
+  --theme-widget-border: 1px solid #e2e8f0;
+  --theme-widget-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --theme-col-todo-bg: #f8fafc;
+  --theme-col-progress-bg: #f0f9ff;
+  --theme-col-done-bg: #f0fdf4;
+  --theme-card-bg: #ffffff;
+}
+
+/* ========================================================
+   Accent System: Trekly Orange vs Forest Green
+   ======================================================== */
+:root, [data-accent="orange"] {
+  --accent-color: #ff7a2f;
+  --accent-hover: #e5651f;
+  --accent-light: #fff3ec;
+  --accent-border: #ff7a2f;
+  --accent-text: #ffffff;
+  --primary: #ff7a2f;
+  --primary-hover: #e5651f;
+  --primary-foreground: #ffffff;
+}
+
+[data-accent="green"] {
+  --accent-color: #1f4d2b;
+  --accent-hover: #173e21;
+  --accent-light: #e8f5ec;
+  --accent-border: #1f4d2b;
+  --accent-text: #ffffff;
+  --primary: #1f4d2b;
+  --primary-hover: #173e21;
+  --primary-foreground: #ffffff;
+}
+
+/* Accent swaps for hardcoded orange utilities when Forest Green is active */
+[data-accent="green"] .bg-\[\#ff7a2f\] {
+  background-color: var(--accent-color) !important;
+}
+[data-accent="green"] .hover\:bg-\[\#e5651f\]:hover,
+[data-accent="green"] .hover\:bg-\[\#e66922\]:hover {
+  background-color: var(--accent-hover) !important;
+}
+[data-accent="green"] .text-\[\#ff7a2f\] {
+  color: var(--accent-color) !important;
+}
+[data-accent="green"] .border-\[\#ff7a2f\] {
+  border-color: var(--accent-color) !important;
+}
+[data-accent="green"] .fill-\[\#ff7a2f\] {
+  fill: var(--accent-color) !important;
+}
+[data-accent="green"] .accent-\[\#ff7a2f\] {
+  accent-color: var(--accent-color) !important;
+}
+
+/* Card container styles driven by data-theme */
+[data-theme="retro"] .rounded-3xl.border-2,
+[data-theme="retro"] .rounded-3xl.border {
+  background-color: var(--theme-card-bg);
+  border-width: 3.5px;
+  border-color: #1a2e1f;
+  border-radius: 28px;
+  box-shadow: 6px 6px 0px #1a2e1f;
+}
+
+[data-theme="minimal"] .rounded-3xl.border-2,
+[data-theme="minimal"] .rounded-3xl.border {
+  background-color: #ffffff;
+  border-width: 1px;
+  border-color: #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
 .landing-page-root {
   font-family: 'Alegreya Sans', sans-serif;
   background-color: #f7f2e7;

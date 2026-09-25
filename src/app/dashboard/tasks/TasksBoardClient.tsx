@@ -15,7 +15,7 @@ import {
   Filter,
   Sparkles,
   GripVertical,
-  Zap
+  Zap,
 } from 'lucide-react';
 import {
   DndContext,
@@ -39,6 +39,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { createPersonalTask, updateTaskStatus, deleteTask } from '../actions';
+import { useTheme } from '@/app/context/ThemeContext';
 
 interface Task {
   id: string;
@@ -70,50 +71,91 @@ function TaskCardView({
   onMoveStatus,
   dragHandleProps,
 }: TaskCardViewProps) {
-  // Palet prioritas: pink (#ff7eb6), oranye (#ff7a2f), kuning (#ffc93c), netral (#fbf3e0)
-  const priorityConfig = {
-    URGENT: {
-      bg: 'bg-[#ff7eb6] text-[#1a2e1f] border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
-      label: 'URGENT',
-    },
-    HIGH: {
-      bg: 'bg-[#ff7a2f] text-white border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
-      label: 'HIGH',
-    },
-    MEDIUM: {
-      bg: 'bg-[#ffc93c] text-[#1a2e1f] border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
-      label: 'MED',
-    },
-    LOW: {
-      bg: 'bg-[#fbf3e0] text-[#1a2e1f] border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
-      label: 'LOW',
-    },
-  }[task.priority || 'MEDIUM'];
+  const { themeStyle, accentColor } = useTheme();
+  const isRetro = themeStyle === 'retro';
+  const isOrange = accentColor === 'orange';
+
+  // Priority configuration: Retro playful vs Minimalist clean
+  const priorityConfig = isRetro
+    ? {
+        URGENT: {
+          bg: 'bg-[#ff7eb6] text-[#1a2e1f] border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
+          label: 'URGENT',
+        },
+        HIGH: {
+          bg: 'bg-[#ff7a2f] text-white border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
+          label: 'HIGH',
+        },
+        MEDIUM: {
+          bg: 'bg-[#ffc93c] text-[#1a2e1f] border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
+          label: 'MED',
+        },
+        LOW: {
+          bg: 'bg-[#fbf3e0] text-[#1a2e1f] border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
+          label: 'LOW',
+        },
+      }[task.priority || 'MEDIUM']
+    : {
+        URGENT: {
+          bg: 'bg-rose-50 text-rose-700 border border-rose-200',
+          label: 'URGENT',
+        },
+        HIGH: {
+          bg: 'bg-orange-50 text-orange-700 border border-orange-200',
+          label: 'HIGH',
+        },
+        MEDIUM: {
+          bg: 'bg-amber-50 text-amber-700 border border-amber-200',
+          label: 'MED',
+        },
+        LOW: {
+          bg: 'bg-slate-50 text-slate-600 border border-slate-200',
+          label: 'LOW',
+        },
+      }[task.priority || 'MEDIUM'];
 
   if (isDragging) {
     return (
-      <div className="bg-[#1a2e1f]/5 rounded-[22px] border-[3px] border-dashed border-[#1a2e1f]/40 h-[105px] opacity-40 shadow-inner" />
+      <div
+        className={`${
+          isRetro
+            ? 'bg-[#1a2e1f]/5 rounded-[22px] border-[3px] border-dashed border-[#1a2e1f]/40'
+            : 'bg-slate-100 rounded-xl border border-dashed border-slate-300'
+        } h-[105px] opacity-40 shadow-inner`}
+      />
     );
   }
 
-  return (
-    <div
-      className={`bg-white p-4 rounded-[22px] border-[3px] border-[#1a2e1f] transition-all space-y-3 group select-none ${
+  const cardClasses = isRetro
+    ? `bg-white p-4 rounded-[22px] border-[3px] border-[#1a2e1f] transition-all space-y-3 group select-none ${
         isOverlay
           ? 'shadow-[10px_10px_0px_#1a2e1f] rotate-2 scale-105 cursor-grabbing z-50'
           : 'shadow-[4px_4px_0px_#1a2e1f] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#1a2e1f] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_#1a2e1f]'
-      }`}
-    >
+      }`
+    : `bg-white p-4 rounded-xl border border-slate-200 transition-all space-y-3 group select-none ${
+        isOverlay
+          ? 'shadow-xl rotate-1 scale-105 cursor-grabbing z-50'
+          : 'shadow-xs hover:shadow-md hover:border-slate-300'
+      }`;
+
+  return (
+    <div className={cardClasses}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <div
             {...dragHandleProps}
-            className="cursor-grab active:cursor-grabbing p-1.5 -m-1 rounded-lg text-[#1a2e1f]/40 group-hover:text-[#1a2e1f] hover:bg-[#fbf3e0] border border-transparent hover:border-[#1a2e1f] transition-all"
+            className={`cursor-grab active:cursor-grabbing p-1.5 -m-1 rounded-lg transition-all ${
+              isRetro
+                ? 'text-[#1a2e1f]/40 group-hover:text-[#1a2e1f] hover:bg-[#fbf3e0] border border-transparent hover:border-[#1a2e1f]'
+                : 'text-slate-400 group-hover:text-slate-700 hover:bg-slate-100'
+            }`}
             title="Tahan dan geser (atau gunakan Spasi/Enter untuk navigasi keyboard)"
           >
             <GripVertical className="w-4 h-4" />
           </div>
-          <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${priorityConfig.bg}`}>
+          <span
+            className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${priorityConfig.bg}`}
+          >
             {priorityConfig.label}
           </span>
         </div>
@@ -126,7 +168,7 @@ function TaskCardView({
               e.stopPropagation();
               onDelete(task.id);
             }}
-            className="text-[#1a2e1f]/40 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 border border-transparent hover:border-red-300"
+            className="text-slate-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50"
             title="Hapus task"
           >
             <Trash2 className="w-4 h-4" />
@@ -134,13 +176,27 @@ function TaskCardView({
         )}
       </div>
 
-      <p className={`text-sm font-extrabold tracking-tight text-[#1a2e1f] leading-snug ${task.status === 'DONE' ? 'line-through text-[#1a2e1f]/40' : ''}`}>
+      <p
+        className={`text-sm font-extrabold tracking-tight leading-snug ${
+          task.status === 'DONE'
+            ? 'line-through text-slate-400'
+            : isRetro
+            ? 'text-[#1a2e1f]'
+            : 'text-slate-800'
+        }`}
+      >
         {task.title}
       </p>
 
-      {/* Manual Status Buttons with Pill Sticker Style */}
+      {/* Manual Status Buttons */}
       {onMoveStatus && (
-        <div className="pt-2.5 border-t-2 border-[#1a2e1f]/15 flex items-center justify-between text-xs">
+        <div
+          className={`pt-2.5 flex items-center justify-between text-xs ${
+            isRetro
+              ? 'border-t-2 border-[#1a2e1f]/15'
+              : 'border-t border-slate-100'
+          }`}
+        >
           {task.status !== 'TODO' && (
             <button
               type="button"
@@ -149,7 +205,11 @@ function TaskCardView({
                 e.stopPropagation();
                 onMoveStatus(task.id, task.status === 'DONE' ? 'IN_PROGRESS' : 'TODO');
               }}
-              className="inline-flex items-center gap-1 font-black text-[#1a2e1f] bg-[#fbf3e0] hover:bg-white border-[2px] border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f] px-2.5 py-1 rounded-full text-[11px] transition-all hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0.5px_0.5px_0px_#1a2e1f]"
+              className={`inline-flex items-center gap-1 font-black px-2.5 py-1 text-[11px] transition-all ${
+                isRetro
+                  ? 'text-[#1a2e1f] bg-[#fbf3e0] hover:bg-white border-[2px] border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f] rounded-full hover:-translate-y-0.5 active:translate-y-0.5'
+                  : 'text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg'
+              }`}
               title="Kembalikan ke status sebelumnya"
             >
               <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -167,17 +227,37 @@ function TaskCardView({
                 e.stopPropagation();
                 onMoveStatus(task.id, task.status === 'TODO' ? 'IN_PROGRESS' : 'DONE');
               }}
-              className={`inline-flex items-center gap-1 font-black text-xs px-3.5 py-1 rounded-full border-[2px] border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#1a2e1f] ml-auto transition-all ${
-                task.status === 'TODO'
-                  ? 'bg-[#ffc93c] hover:bg-[#ffbe1a] text-[#1a2e1f]'
-                  : 'bg-[#2d6a3e] hover:bg-[#235331] text-white'
+              className={`inline-flex items-center gap-1 font-black text-xs px-3.5 py-1 ml-auto transition-all ${
+                isRetro
+                  ? `rounded-full border-[2px] border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] hover:-translate-y-0.5 active:translate-y-0.5 ${
+                      task.status === 'TODO'
+                        ? 'bg-[#ffc93c] hover:bg-[#ffbe1a] text-[#1a2e1f]'
+                        : isOrange
+                        ? 'bg-[#ff7a2f] hover:bg-[#e5651f] text-white'
+                        : 'bg-[#1f4d2b] hover:bg-[#173e21] text-white'
+                    }`
+                  : `rounded-lg shadow-xs ${
+                      task.status === 'TODO'
+                        ? isOrange
+                          ? 'bg-orange-100 text-[#ff7a2f] hover:bg-orange-200'
+                          : 'bg-emerald-100 text-[#1f4d2b] hover:bg-emerald-200'
+                        : isOrange
+                        ? 'bg-[#ff7a2f] text-white hover:bg-[#e5651f]'
+                        : 'bg-[#1f4d2b] text-white hover:bg-[#173e21]'
+                    }`
               }`}
             >
               <span>{task.status === 'TODO' ? 'Mulai Kerja' : 'Selesaikan'}</span>
               <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
             </button>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#2d6a3e] bg-[#dcfce7] border-[2px] border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f] px-3 py-0.5 rounded-full ml-auto">
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-black px-3 py-0.5 ml-auto ${
+                isRetro
+                  ? 'text-[#2d6a3e] bg-[#dcfce7] border-[2px] border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f] rounded-full'
+                  : 'text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg'
+              }`}
+            >
               <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Selesai</span>
             </span>
@@ -223,7 +303,7 @@ function SortableTaskCard({
       style={style}
       {...attributes}
       {...listeners}
-      className="cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-[#1a2e1f] rounded-[22px]"
+      className="cursor-grab active:cursor-grabbing focus:outline-none rounded-[22px]"
     >
       <TaskCardView
         task={task}
@@ -252,6 +332,10 @@ function KanbanColumn({
   onDelete,
   onMoveStatus,
 }: KanbanColumnProps) {
+  const { themeStyle, accentColor } = useTheme();
+  const isRetro = themeStyle === 'retro';
+  const isOrange = accentColor === 'orange';
+
   const { setNodeRef } = useDroppable({
     id,
     data: {
@@ -260,58 +344,110 @@ function KanbanColumn({
     },
   });
 
-  // Palet kolom: TO DO (cream/netral #fff9ed), IN PROGRESS (biru pastel #e6f4fa), DONE (hijau pastel #e8f7ec)
-  const columnConfig = {
-    TODO: {
-      dot: 'bg-[#ffc93c] border-2 border-[#1a2e1f]',
-      defaultBg: 'bg-[#fff9ed]',
-      highlightBg: 'bg-[#fff3db] ring-2 ring-[#ff7a2f] shadow-[8px_8px_0px_#ff7a2f]',
-      emptyText: 'Tidak ada task di antrean To Do',
-      dropPrompt: 'Lepaskan task di To Do',
-      emptyIcon: Clock,
-      emptyBadgeColor: 'bg-[#ffc93c] text-[#1a2e1f]',
-    },
-    IN_PROGRESS: {
-      dot: 'bg-[#0a93c7] border-2 border-[#1a2e1f]',
-      defaultBg: 'bg-[#e6f4fa]',
-      highlightBg: 'bg-[#d2edf7] ring-2 ring-[#0a93c7] shadow-[8px_8px_0px_#0a93c7]',
-      emptyText: 'Belum ada task yang sedang dikerjakan',
-      dropPrompt: 'Lepaskan task di In Progress',
-      emptyIcon: Zap,
-      emptyBadgeColor: 'bg-[#bfe3f0] text-[#0a93c7]',
-    },
-    DONE: {
-      dot: 'bg-[#2d6a3e] border-2 border-[#1a2e1f]',
-      defaultBg: 'bg-[#e8f7ec]',
-      highlightBg: 'bg-[#d6f2dc] ring-2 ring-[#2d6a3e] shadow-[8px_8px_0px_#2d6a3e]',
-      emptyText: 'Selesaikan task untuk mencatat progres di sini',
-      dropPrompt: 'Lepaskan task di Done',
-      emptyIcon: CheckCircle2,
-      emptyBadgeColor: 'bg-[#dcfce7] text-[#2d6a3e]',
-    },
-  }[id];
+  const columnConfig = isRetro
+    ? {
+        TODO: {
+          dot: 'bg-[#ffc93c] border-2 border-[#1a2e1f]',
+          defaultBg: 'bg-[#fff9ed]',
+          highlightBg: 'bg-[#fff3db] ring-2 ring-[#ff7a2f] shadow-[8px_8px_0px_#ff7a2f]',
+          emptyText: 'Tidak ada task di antrean To Do',
+          dropPrompt: 'Lepaskan task di To Do',
+          emptyIcon: Clock,
+          emptyBadgeColor: 'bg-[#ffc93c] text-[#1a2e1f]',
+        },
+        IN_PROGRESS: {
+          dot: 'bg-[#0a93c7] border-2 border-[#1a2e1f]',
+          defaultBg: 'bg-[#e6f4fa]',
+          highlightBg: 'bg-[#d2edf7] ring-2 ring-[#0a93c7] shadow-[8px_8px_0px_#0a93c7]',
+          emptyText: 'Belum ada task yang sedang dikerjakan',
+          dropPrompt: 'Lepaskan task di In Progress',
+          emptyIcon: Zap,
+          emptyBadgeColor: 'bg-[#bfe3f0] text-[#0a93c7]',
+        },
+        DONE: {
+          dot: 'bg-[#2d6a3e] border-2 border-[#1a2e1f]',
+          defaultBg: 'bg-[#e8f7ec]',
+          highlightBg: 'bg-[#d6f2dc] ring-2 ring-[#2d6a3e] shadow-[8px_8px_0px_#2d6a3e]',
+          emptyText: 'Selesaikan task untuk mencatat progres di sini',
+          dropPrompt: 'Lepaskan task di Done',
+          emptyIcon: CheckCircle2,
+          emptyBadgeColor: 'bg-[#dcfce7] text-[#2d6a3e]',
+        },
+      }[id]
+    : {
+        TODO: {
+          dot: isOrange ? 'bg-[#ff7a2f]' : 'bg-emerald-600',
+          defaultBg: 'bg-slate-50/80',
+          highlightBg: 'bg-blue-50/70 ring-2 ring-blue-500 shadow-md',
+          emptyText: 'Tidak ada task di antrean To Do',
+          dropPrompt: 'Lepaskan task di To Do',
+          emptyIcon: Clock,
+          emptyBadgeColor: 'bg-slate-200 text-slate-700',
+        },
+        IN_PROGRESS: {
+          dot: 'bg-sky-500',
+          defaultBg: 'bg-sky-50/50',
+          highlightBg: 'bg-sky-100/70 ring-2 ring-sky-500 shadow-md',
+          emptyText: 'Belum ada task yang sedang dikerjakan',
+          dropPrompt: 'Lepaskan task di In Progress',
+          emptyIcon: Zap,
+          emptyBadgeColor: 'bg-sky-100 text-sky-700',
+        },
+        DONE: {
+          dot: 'bg-emerald-500',
+          defaultBg: 'bg-emerald-50/50',
+          highlightBg: 'bg-emerald-100/70 ring-2 ring-emerald-500 shadow-md',
+          emptyText: 'Selesaikan task untuk mencatat progres di sini',
+          dropPrompt: 'Lepaskan task di Done',
+          emptyIcon: CheckCircle2,
+          emptyBadgeColor: 'bg-emerald-100 text-emerald-700',
+        },
+      }[id];
 
   const taskIds = useMemo(() => tasks.map((t) => t.id), [tasks]);
   const EmptyIcon = columnConfig.emptyIcon;
 
-  return (
-    <div
-      ref={setNodeRef}
-      className={`p-5 sm:p-6 rounded-[28px] border-[3.5px] border-[#1a2e1f] transition-all space-y-4 flex flex-col min-h-[480px] ${
+  const colClasses = isRetro
+    ? `p-5 sm:p-6 rounded-[28px] border-[3.5px] border-[#1a2e1f] transition-all space-y-4 flex flex-col min-h-[480px] ${
         isHighlighted
           ? columnConfig.highlightBg
           : `${columnConfig.defaultBg} shadow-[6px_6px_0px_#1a2e1f]`
-      }`}
-    >
+      }`
+    : `p-5 sm:p-6 rounded-2xl border border-slate-200 transition-all space-y-4 flex flex-col min-h-[480px] font-sans ${
+        isHighlighted
+          ? columnConfig.highlightBg
+          : `${columnConfig.defaultBg} shadow-xs`
+      }`;
+
+  return (
+    <div ref={setNodeRef} className={colClasses}>
       {/* Column Header */}
-      <div className="flex items-center justify-between pb-3.5 border-b-[2.5px] border-[#1a2e1f]/20">
+      <div
+        className={`flex items-center justify-between pb-3.5 ${
+          isRetro
+            ? 'border-b-[2.5px] border-[#1a2e1f]/20'
+            : 'border-b border-slate-200/80'
+        }`}
+      >
         <div className="flex items-center gap-2.5">
           <div className={`w-3.5 h-3.5 rounded-full ${columnConfig.dot}`} />
-          <h3 className="font-['Fraunces',serif] font-black text-base uppercase tracking-wider text-[#1a2e1f]">
+          <h3
+            className={`text-base uppercase tracking-wider font-black ${
+              isRetro
+                ? "font-['Fraunces',serif] text-[#1a2e1f]"
+                : 'text-slate-800 font-sans'
+            }`}
+          >
             {title}
           </h3>
         </div>
-        <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-white border-2 border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] text-[#1a2e1f]">
+        <span
+          className={`text-xs font-black px-2.5 py-0.5 rounded-full ${
+            isRetro
+              ? 'bg-white border-2 border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] text-[#1a2e1f]'
+              : 'bg-white border border-slate-200 shadow-xs text-slate-700'
+          }`}
+        >
           {tasks.length}
         </span>
       </div>
@@ -320,12 +456,28 @@ function KanbanColumn({
       <div className="space-y-3 flex-1 flex flex-col">
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.length === 0 ? (
-            <div className={`flex-1 flex flex-col items-center justify-center p-8 rounded-[22px] border-[2.5px] border-dashed transition-all text-center space-y-2 ${
-              isHighlighted
-                ? 'border-[#1a2e1f] bg-[#ffeed0] text-[#1a2e1f] font-black animate-pulse'
-                : 'border-[#1a2e1f]/35 bg-white/40 text-[#1a2e1f]/70'
-            }`}>
-              <div className={`w-10 h-10 rounded-full border-2 border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] flex items-center justify-center mb-1 ${columnConfig.emptyBadgeColor}`}>
+            <div
+              className={`flex-1 flex flex-col items-center justify-center p-8 border-dashed transition-all text-center space-y-2 ${
+                isRetro
+                  ? `rounded-[22px] border-[2.5px] ${
+                      isHighlighted
+                        ? 'border-[#1a2e1f] bg-[#ffeed0] text-[#1a2e1f] font-black animate-pulse'
+                        : 'border-[#1a2e1f]/35 bg-white/40 text-[#1a2e1f]/70'
+                    }`
+                  : `rounded-xl border ${
+                      isHighlighted
+                        ? 'border-blue-400 bg-blue-50 text-blue-900 font-bold'
+                        : 'border-slate-300 bg-white/50 text-slate-500'
+                    }`
+              }`}
+            >
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 ${
+                  isRetro
+                    ? `border-2 border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] ${columnConfig.emptyBadgeColor}`
+                    : `${columnConfig.emptyBadgeColor} shadow-xs`
+                }`}
+              >
                 <EmptyIcon className="w-5 h-5 stroke-[2.5]" />
               </div>
               <p className="text-xs font-bold leading-relaxed max-w-[200px]">
@@ -342,12 +494,6 @@ function KanbanColumn({
                   onMoveStatus={onMoveStatus}
                 />
               ))}
-
-              {isHighlighted && (
-                <div className="border-[2.5px] border-dashed border-[#1a2e1f] bg-[#ffeed0] text-[#1a2e1f] rounded-[22px] p-4 flex items-center justify-center text-xs font-black animate-pulse mt-auto shadow-[3px_3px_0px_#1a2e1f]">
-                  {columnConfig.dropPrompt}
-                </div>
-              )}
             </>
           )}
         </SortableContext>
@@ -357,16 +503,20 @@ function KanbanColumn({
 }
 
 export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps) {
+  const { themeStyle, accentColor } = useTheme();
+  const isRetro = themeStyle === 'retro';
+  const isOrange = accentColor === 'orange';
+
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [hoveredColumnId, setHoveredColumnId] = useState<'TODO' | 'IN_PROGRESS' | 'DONE' | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newPriority, setNewPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'>('MEDIUM');
   const [searchQuery, setSearchQuery] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('ALL');
-  const [isAdding, setIsAdding] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -375,7 +525,7 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // 5px threshold to allow clean clicks on buttons
+        distance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -385,9 +535,9 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
-      const matchesQuery = t.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesPriority = priorityFilter === 'ALL' || t.priority === priorityFilter;
-      return matchesQuery && matchesPriority;
+      return matchesSearch && matchesPriority;
     });
   }, [tasks, searchQuery, priorityFilter]);
 
@@ -450,7 +600,6 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // Detect target column
     let targetColumn: 'TODO' | 'IN_PROGRESS' | 'DONE' | null = null;
     if (overId === 'TODO' || overId === 'IN_PROGRESS' || overId === 'DONE') {
       targetColumn = overId;
@@ -468,7 +617,6 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
     const currentActiveTask = tasks.find((t) => t.id === activeId);
     if (!currentActiveTask) return;
 
-    // Move task across columns dynamically during drag for live feedback
     if (currentActiveTask.status !== targetColumn) {
       setTasks((prev) => {
         const activeIndex = prev.findIndex((t) => t.id === activeId);
@@ -509,7 +657,6 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
 
     if (!destinationColumn) return;
 
-    // Reorder within the same list if needed
     if (activeId !== overId && overId !== destinationColumn) {
       setTasks((prev) => {
         const oldIndex = prev.findIndex((t) => t.id === activeId);
@@ -521,7 +668,6 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
       });
     }
 
-    // Persist status change to database if moved to a different column
     if (original.status !== destinationColumn) {
       setTasks((prev) =>
         prev.map((t) => (t.id === activeId ? { ...t, status: destinationColumn } : t))
@@ -531,7 +677,6 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
         await updateTaskStatus(activeId, destinationColumn);
       } catch (err) {
         console.error('Failed to update task status in database', err);
-        // Rollback on failure
         setTasks((prev) =>
           prev.map((t) => (t.id === activeId ? { ...t, status: original.status } : t))
         );
@@ -549,29 +694,63 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
     setHoveredColumnId(null);
   };
 
+  const headerContainerClasses = isRetro
+    ? 'bg-[#fff9ed] p-6 sm:p-8 rounded-[28px] border-[3.5px] border-[#1a2e1f] shadow-[6px_6px_0px_#1a2e1f]'
+    : 'bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs font-sans';
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 font-['Alegreya_Sans',sans-serif]">
-      {/* Header Container with Neo-Brutalist Sticker Style */}
-      <div className="bg-[#fff9ed] p-6 sm:p-8 rounded-[28px] border-[3.5px] border-[#1a2e1f] shadow-[6px_6px_0px_#1a2e1f]">
+    <div
+      className={`space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 ${
+        isRetro ? "font-['Alegreya_Sans',sans-serif]" : 'font-sans'
+      }`}
+    >
+      {/* Header Container */}
+      <div className={headerContainerClasses}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black bg-[#ffc93c] text-[#1a2e1f] border-[2px] border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] mb-3">
+            <div
+              className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black mb-3 ${
+                isRetro
+                  ? 'bg-[#ffc93c] text-[#1a2e1f] border-[2px] border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f]'
+                  : isOrange
+                  ? 'bg-orange-100 text-[#ff7a2f] border border-orange-200'
+                  : 'bg-emerald-100 text-[#1f4d2b] border border-emerald-200'
+              }`}
+            >
               <Kanban className="w-3.5 h-3.5" />
               <span>Papan Kanban Personal</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-['Fraunces',serif] font-black text-[#1a2e1f] tracking-tight leading-tight">
+            <h1
+              className={`text-3xl sm:text-4xl font-black tracking-tight leading-tight ${
+                isRetro
+                  ? "font-['Fraunces',serif] text-[#1a2e1f]"
+                  : 'text-slate-900 font-sans'
+              }`}
+            >
               Tasks & Board
             </h1>
-            <p className="text-[#1a2e1f]/75 font-medium text-sm sm:text-base mt-1.5 max-w-xl leading-relaxed">
+            <p
+              className={`text-sm sm:text-base mt-1.5 max-w-xl leading-relaxed ${
+                isRetro ? 'text-[#1a2e1f]/75 font-medium' : 'text-slate-500'
+              }`}
+            >
               Alur manajemen tugas individual. Geser dan letakkan (drag & drop) kartu task antar kolom Todo, In Progress, dan Done, atau atur ulang urutan kartu.
             </p>
           </div>
 
-          {/* Pill CTA button matching Landing Page */}
+          {/* CTA Button "+ Task Baru" */}
           <button
             type="button"
             onClick={() => setIsAdding(!isAdding)}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#ff7a2f] text-white font-black text-sm border-[3px] border-[#1a2e1f] shadow-[4px_4px_0px_#1a2e1f] hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#1a2e1f] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#1a2e1f] transition-all cursor-pointer self-start md:self-auto"
+            className={`inline-flex items-center justify-center gap-2 font-black transition-all cursor-pointer self-start md:self-auto ${
+              isRetro
+                ? `px-6 py-3.5 rounded-full text-sm text-white border-[3px] border-[#1a2e1f] shadow-[4px_4px_0px_#1a2e1f] hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#1a2e1f] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#1a2e1f] ${
+                    isOrange ? 'bg-[#ff7a2f]' : 'bg-[#1f4d2b]'
+                  }`
+                : `px-5 py-3 rounded-xl text-xs text-white shadow-xs hover:opacity-95 ${
+                    isOrange ? 'bg-[#ff7a2f]' : 'bg-[#1f4d2b]'
+                  }`
+            }`}
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>+ Task Baru</span>
@@ -582,7 +761,11 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
         {isAdding && (
           <form
             onSubmit={handleCreate}
-            className="mt-6 p-5 rounded-[22px] bg-[#ffeed0] border-[3px] border-[#1a2e1f] shadow-[4px_4px_0px_#1a2e1f] space-y-3.5 animate-in fade-in duration-200"
+            className={`mt-6 p-5 space-y-3.5 animate-in fade-in duration-200 ${
+              isRetro
+                ? 'rounded-[22px] bg-[#ffeed0] border-[3px] border-[#1a2e1f] shadow-[4px_4px_0px_#1a2e1f]'
+                : 'rounded-xl bg-slate-50 border border-slate-200 shadow-xs'
+            }`}
           >
             <div className="flex flex-col sm:flex-row gap-3">
               <input
@@ -590,13 +773,21 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Judul task baru..."
-                className="flex-1 px-4 py-2.5 bg-white border-[2.5px] border-[#1a2e1f] rounded-xl text-sm font-bold text-[#1a2e1f] focus:outline-none placeholder:text-[#1a2e1f]/40"
+                className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold focus:outline-none ${
+                  isRetro
+                    ? 'bg-white border-[2.5px] border-[#1a2e1f] text-[#1a2e1f] placeholder:text-[#1a2e1f]/40'
+                    : 'bg-white border border-slate-200 text-slate-800 placeholder:text-slate-400'
+                }`}
                 autoFocus
               />
               <select
                 value={newPriority}
                 onChange={(e) => setNewPriority(e.target.value as any)}
-                className="px-3.5 py-2.5 bg-white border-[2.5px] border-[#1a2e1f] rounded-xl text-xs font-black text-[#1a2e1f] focus:outline-none"
+                className={`px-3.5 py-2.5 rounded-xl text-xs font-black focus:outline-none ${
+                  isRetro
+                    ? 'bg-white border-[2.5px] border-[#1a2e1f] text-[#1a2e1f]'
+                    : 'bg-white border border-slate-200 text-slate-800'
+                }`}
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -608,14 +799,26 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
               <button
                 type="button"
                 onClick={() => setIsAdding(false)}
-                className="px-4 py-2 rounded-full text-xs font-bold border-2 border-[#1a2e1f] bg-white text-[#1a2e1f] hover:bg-gray-100 transition-colors"
+                className={`px-4 py-2 text-xs font-bold transition-colors ${
+                  isRetro
+                    ? 'rounded-full border-2 border-[#1a2e1f] bg-white text-[#1a2e1f] hover:bg-gray-100'
+                    : 'rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                }`}
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={!newTitle.trim()}
-                className="px-5 py-2 rounded-full text-xs font-black border-[2.5px] border-[#1a2e1f] bg-[#1f4d2b] text-[#fbf3e0] shadow-[3px_3px_0px_#1a2e1f] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#1a2e1f] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1a2e1f] disabled:opacity-50 transition-all"
+                className={`px-5 py-2 text-xs font-black transition-all disabled:opacity-50 ${
+                  isRetro
+                    ? `rounded-full border-[2.5px] border-[#1a2e1f] text-white shadow-[3px_3px_0px_#1a2e1f] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#1a2e1f] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1a2e1f] ${
+                        isOrange ? 'bg-[#ff7a2f]' : 'bg-[#1f4d2b]'
+                      }`
+                    : `rounded-lg text-white shadow-xs ${
+                        isOrange ? 'bg-[#ff7a2f] hover:bg-[#e5651f]' : 'bg-[#1f4d2b] hover:bg-[#173e21]'
+                      }`
+                }`}
               >
                 Simpan Task
               </button>
@@ -624,34 +827,65 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
         )}
 
         {/* Filter and Search Bar */}
-        <div className="mt-6 pt-5 border-t-2 border-[#1a2e1f]/15 flex flex-col sm:flex-row items-center justify-between gap-3.5">
+        <div
+          className={`mt-6 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3.5 ${
+            isRetro ? 'border-t-2 border-[#1a2e1f]/15' : 'border-t border-slate-100'
+          }`}
+        >
           <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 text-[#1a2e1f]/50 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search
+              className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${
+                isRetro ? 'text-[#1a2e1f]/50' : 'text-slate-400'
+              }`}
+            />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari task..."
-              className="w-full pl-9 pr-4 py-2 bg-white border-[2.5px] border-[#1a2e1f] shadow-[3px_3px_0px_#1a2e1f] rounded-full text-xs font-bold text-[#1a2e1f] placeholder:text-[#1a2e1f]/40 focus:outline-none"
+              className={`w-full pl-9 pr-4 py-2 text-xs font-bold focus:outline-none ${
+                isRetro
+                  ? 'bg-white border-[2.5px] border-[#1a2e1f] shadow-[3px_3px_0px_#1a2e1f] rounded-full text-[#1a2e1f] placeholder:text-[#1a2e1f]/40'
+                  : 'bg-white border border-slate-200 rounded-xl text-slate-800 placeholder:text-slate-400 shadow-xs'
+              }`}
             />
           </div>
 
           <div className="flex items-center gap-1.5 self-start sm:self-auto text-xs font-black flex-wrap">
-            <span className="text-[#1a2e1f]/70 mr-1 text-[11px] uppercase tracking-wider">Prioritas:</span>
-            {['ALL', 'URGENT', 'HIGH', 'MEDIUM', 'LOW'].map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPriorityFilter(p)}
-                className={`px-3 py-1 rounded-full text-xs font-black transition-all border-[2px] border-[#1a2e1f] ${
-                  priorityFilter === p
-                    ? 'bg-[#ffc93c] text-[#1a2e1f] shadow-[3px_3px_0px_#1a2e1f] -translate-y-0.5'
-                    : 'bg-white text-[#1a2e1f]/70 hover:bg-[#fff9ed] hover:text-[#1a2e1f] hover:shadow-[2px_2px_0px_#1a2e1f]'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
+            <span
+              className={`mr-1 text-[11px] uppercase tracking-wider ${
+                isRetro ? 'text-[#1a2e1f]/70' : 'text-slate-400 font-semibold'
+              }`}
+            >
+              Prioritas:
+            </span>
+            {['ALL', 'URGENT', 'HIGH', 'MEDIUM', 'LOW'].map((p) => {
+              const isSelected = priorityFilter === p;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPriorityFilter(p)}
+                  className={`px-3 py-1 text-xs font-black transition-all ${
+                    isRetro
+                      ? `rounded-full border-[2px] border-[#1a2e1f] ${
+                          isSelected
+                            ? 'bg-[#ffc93c] text-[#1a2e1f] shadow-[3px_3px_0px_#1a2e1f] -translate-y-0.5'
+                            : 'bg-white text-[#1a2e1f]/70 hover:bg-[#fff9ed] hover:text-[#1a2e1f] hover:shadow-[2px_2px_0px_#1a2e1f]'
+                        }`
+                      : `rounded-lg ${
+                          isSelected
+                            ? isOrange
+                              ? 'bg-[#ff7a2f] text-white shadow-xs'
+                              : 'bg-[#1f4d2b] text-white shadow-xs'
+                            : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                        }`
+                  }`}
+                >
+                  {p}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
