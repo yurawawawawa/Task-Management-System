@@ -1,15 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { computeStreaks, getLevel, DailyActivity } from './streaks';
+import { computeStreaks, getLevel, calculateStreakWithFreeze, DailyActivity } from './streaks';
 
 describe('getLevel', () => {
   it('returns correct levels based on completed count', () => {
     expect(getLevel(0)).toBe(0);
     expect(getLevel(1)).toBe(1);
-    expect(getLevel(2)).toBe(1);
+    expect(getLevel(2)).toBe(2);
     expect(getLevel(3)).toBe(2);
-    expect(getLevel(4)).toBe(2);
+    expect(getLevel(4)).toBe(3);
     expect(getLevel(5)).toBe(3);
-    expect(getLevel(10)).toBe(3);
+    expect(getLevel(6)).toBe(4);
+    expect(getLevel(10)).toBe(4);
   });
 });
 
@@ -84,5 +85,35 @@ describe('computeStreaks', () => {
     // Streak lengths: 1 and 1. 
     // Since 15th is today and it's active, current is 1. Longest is 1.
     expect(result).toEqual({ current: 1, longest: 1, activeDays: 2 });
+  });
+});
+
+describe('calculateStreakWithFreeze', () => {
+  const todayStr = '2023-10-15';
+
+  it('uses 1 freeze automatically when 1 day is missed and preserves streak', () => {
+    const days: DailyActivity[] = [
+      { date: '2023-10-11', completed: 2 },
+      { date: '2023-10-12', completed: 1 },
+      { date: '2023-10-13', completed: 3 },
+      // 2023-10-14 is missed!
+      { date: '2023-10-15', completed: 2 },
+    ];
+    const result = calculateStreakWithFreeze(days, todayStr, 2);
+    // With 1 freeze consumed for the 14th:
+    expect(result.current).toBe(5);
+    expect(result.remainingFreeze).toBe(1);
+    expect(result.usedFreezeDates).toEqual(['2023-10-14']);
+  });
+
+  it('resets streak to 0 if gap exceeds available freeze shields', () => {
+    const days: DailyActivity[] = [
+      { date: '2023-10-10', completed: 2 },
+      // 11th, 12th, 13th, 14th missed (4 days) with only 2 freeze
+      { date: '2023-10-15', completed: 1 },
+    ];
+    const result = calculateStreakWithFreeze(days, todayStr, 2);
+    expect(result.current).toBe(1); // Today starts a new streak of 1
+    expect(result.remainingFreeze).toBe(2);
   });
 });

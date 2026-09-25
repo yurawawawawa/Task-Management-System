@@ -3,6 +3,7 @@
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
 import { revalidatePath } from 'next/cache';
+import { recordDailyActivity } from '@/app/lib/activity';
 
 export async function createPersonalTask(
   title: string,
@@ -36,12 +37,24 @@ export async function updateTaskStatus(
   const user = await getAuthUser();
   if (!user) throw new Error('Unauthorized');
 
+  const oldTask = await db.orm.public.Task.where({
+    id: taskId,
+    userId: user.id,
+  }).first();
+
   const updated = await db.orm.public.Task.where({
     id: taskId,
     userId: user.id,
   }).update({
     status,
   });
+
+  // Automatically record daily activity when task is marked as DONE
+  if (oldTask && oldTask.status !== 'DONE' && status === 'DONE') {
+    await recordDailyActivity(user.id, { type: 'task', action: 'increment' });
+  } else if (oldTask && oldTask.status === 'DONE' && status !== 'DONE') {
+    await recordDailyActivity(user.id, { type: 'task', action: 'decrement' });
+  }
 
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/tasks');
@@ -61,4 +74,19 @@ export async function deleteTask(taskId: string) {
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/tasks');
   revalidatePath('/dashboard/productivity');
+}
+
+export async function recordHabitCompletion(action: 'increment' | 'decrement' = 'increment') {
+  const user = await getAuthUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const result = await recordDailyActivity(user.id, {
+    type: 'habit',
+    action,
+  });
+
+  revalidatePath('/dashboard');
+  revalidatePath('/dashboard/habits');
+  revalidatePath('/dashboard/productivity');
+  return result;
 }

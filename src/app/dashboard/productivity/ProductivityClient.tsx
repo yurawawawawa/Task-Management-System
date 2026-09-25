@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Flame,
   Snowflake,
@@ -16,11 +16,12 @@ import {
   Clock
 } from 'lucide-react';
 import Link from 'next/link';
+import { formatIndonesianDate } from '@/app/lib/streaks';
 
 interface ActivityDay {
   date: string; // YYYY-MM-DD
   count: number;
-  level: 0 | 1 | 2 | 3;
+  level: 0 | 1 | 2 | 3 | 4;
 }
 
 interface ProductivityClientProps {
@@ -28,6 +29,7 @@ interface ProductivityClientProps {
   longestStreak: number;
   totalActiveDays: number;
   totalCompleted: number;
+  freezeCount?: number;
   activities: ActivityDay[];
   todayStr: string;
 }
@@ -42,21 +44,83 @@ export default function ProductivityClient({
   longestStreak,
   totalActiveDays,
   totalCompleted,
+  freezeCount: initialFreezeCount = 2,
   activities,
   todayStr,
 }: ProductivityClientProps) {
-  const [freezeCount, setFreezeCount] = useState(2);
+  const [freezeCount, setFreezeCount] = useState(initialFreezeCount);
   const [freezeActiveToday, setFreezeActiveToday] = useState(false);
+  const [isUpdatingFreeze, setIsUpdatingFreeze] = useState(false);
   const [selectedRange, setSelectedRange] = useState<'3M' | '6M' | '1Y'>('6M');
   const [hoveredDay, setHoveredDay] = useState<ActivityDay | null>(null);
 
-  const handleUseFreeze = () => {
-    if (freezeActiveToday) {
-      setFreezeActiveToday(false);
-      setFreezeCount((prev) => Math.min(3, prev + 1));
-    } else if (freezeCount > 0) {
-      setFreezeActiveToday(true);
-      setFreezeCount((prev) => Math.max(0, prev - 1));
+  // Floating tooltip state
+  const [tooltip, setTooltip] = useState<{ day: ActivityDay; x: number; y: number } | null>(null);
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsTooltipVisible(false);
+    };
+    window.addEventListener('scroll', handleScroll, true);
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+    };
+  }, []);
+
+  const handleCellMouseEnter = (day: ActivityDay, e: React.MouseEvent<HTMLDivElement>) => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoveredDay(day);
+    setTooltip({
+      day,
+      x: rect.left + rect.width / 2,
+      y: rect.top,
+    });
+    setIsTooltipVisible(true);
+  };
+
+  const handleCellMouseLeave = () => {
+    setHoveredDay(null);
+    setIsTooltipVisible(false);
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+    }
+    hideTimeoutRef.current = setTimeout(() => {
+      setTooltip(null);
+    }, 200);
+  };
+
+  const handleUseFreeze = async () => {
+    if (isUpdatingFreeze) return;
+    const willActivate = !freezeActiveToday;
+    if (willActivate && freezeCount <= 0) return;
+
+    setFreezeActiveToday(willActivate);
+    setFreezeCount((prev) => (willActivate ? Math.max(0, prev - 1) : Math.min(3, prev + 1)));
+
+    setIsUpdatingFreeze(true);
+    try {
+      const res = await fetch('/api/productivity/freeze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: willActivate ? 'use' : 'cancel' }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.freezeCount === 'number') {
+          setFreezeCount(data.freezeCount);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update freeze:', err);
+    } finally {
+      setIsUpdatingFreeze(false);
     }
   };
 
@@ -325,18 +389,19 @@ export default function ProductivityClient({
                       const isToday = day.date === todayStr;
                       const levelBg = {
                         0: 'bg-[#f4efe6] hover:bg-[#e7e0d3]',
-                        1: 'bg-[#ffc93c]/50 hover:bg-[#ffc93c]',
-                        2: 'bg-[#ff7a2f]/70 hover:bg-[#ff7a2f]',
-                        3: 'bg-[#1f4d2b] hover:bg-[#2d6a3e]',
+                        1: 'bg-[#bbf7d0] hover:bg-[#86efac]',
+                        2: 'bg-[#4ade80] hover:bg-[#22c55e]',
+                        3: 'bg-[#16a34a] hover:bg-[#15803d]',
+                        4: 'bg-[#1f4d2b] hover:bg-[#153a20]',
                       }[day.level];
 
                       return (
                         <div
                           key={day.date}
-                          onMouseEnter={() => setHoveredDay(day)}
-                          onMouseLeave={() => setHoveredDay(null)}
+                          onMouseEnter={(e) => handleCellMouseEnter(day, e)}
+                          onMouseLeave={handleCellMouseLeave}
                           className={`w-3.5 h-3.5 rounded-[4px] transition-all cursor-pointer ${levelBg} ${
-                            isToday ? 'ring-2 ring-primary ring-offset-1' : ''
+                            isToday ? 'ring-2 ring-[#1f4d2b] ring-offset-1' : ''
                           }`}
                         />
                       );
@@ -351,7 +416,10 @@ export default function ProductivityClient({
               <div className="h-5 flex items-center">
                 {hoveredDay ? (
                   <span className="font-extrabold text-foreground">
-                    {hoveredDay.count} aktivitas pada tanggal {hoveredDay.date}
+                    {formatIndonesianDate(hoveredDay.date)} —{' '}
+                    {hoveredDay.count > 0
+                      ? `${hoveredDay.count} task terselesaikan`
+                      : 'Tidak ada task terselesaikan'}
                   </span>
                 ) : (
                   <span>Arahkan kursor ke kotak untuk melihat detail harian.</span>
@@ -361,15 +429,39 @@ export default function ProductivityClient({
               {/* Legend */}
               <div className="flex items-center gap-1.5 font-bold">
                 <span className="text-[11px]">Sedikit</span>
-                <div className="w-3.5 h-3.5 rounded-[4px] bg-[#f4efe6]" />
-                <div className="w-3.5 h-3.5 rounded-[4px] bg-[#ffc93c]/50" />
-                <div className="w-3.5 h-3.5 rounded-[4px] bg-[#ff7a2f]/70" />
-                <div className="w-3.5 h-3.5 rounded-[4px] bg-[#1f4d2b]" />
+                <div className="w-3.5 h-3.5 rounded-[4px] bg-[#f4efe6] border border-border/40" title="0 task" />
+                <div className="w-3.5 h-3.5 rounded-[4px] bg-[#bbf7d0]" title="1 task" />
+                <div className="w-3.5 h-3.5 rounded-[4px] bg-[#4ade80]" title="2-3 task" />
+                <div className="w-3.5 h-3.5 rounded-[4px] bg-[#16a34a]" title="4-5 task" />
+                <div className="w-3.5 h-3.5 rounded-[4px] bg-[#1f4d2b]" title="6+ task" />
                 <span className="text-[11px]">Banyak</span>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Floating Tooltip with Smooth Fade Transition */}
+        {tooltip && (
+          <div
+            className={`fixed z-50 pointer-events-none -translate-x-1/2 -translate-y-full transition-all duration-200 ease-out ${
+              isTooltipVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+            }`}
+            style={{
+              left: `${tooltip.x}px`,
+              top: `${tooltip.y - 8}px`,
+            }}
+          >
+            <div className="relative bg-[#1a2e1f] text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-xl border border-white/10 whitespace-nowrap">
+              <span>
+                {formatIndonesianDate(tooltip.day.date)} —{' '}
+                {tooltip.day.count > 0
+                  ? `${tooltip.day.count} task terselesaikan`
+                  : 'Tidak ada task terselesaikan'}
+              </span>
+              <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2 h-2 bg-[#1a2e1f] rotate-45 border-r border-b border-white/10" />
+            </div>
+          </div>
+        )}
 
         {/* 4 Stats Cards */}
         <div className="mt-6 pt-6 border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-4">
