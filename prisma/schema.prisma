@@ -31,6 +31,7 @@ model Profile {
   tasks           Task[]         @relation("UserTasks")
   assignedTasks   Task[]         @relation("AssignedTasks")
   projectMembers  ProjectMember[]
+  dailyActivities DailyActivity[]
 
   @@map("profiles")
 }
@@ -126,4 +127,27 @@ enum TaskPriority {
   MEDIUM
   HIGH
   URGENT
+}
+
+// ============================================
+// Daily Activity
+// ============================================
+
+model DailyActivity {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  date          String   @map("date")
+  taskCount     Int      @default(0) @map("task_count")
+  streakCounted Boolean  @default(false) @map("streak_counted")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([userId, date])
+  @@map("daily_activities")
 }

@@ -15,6 +15,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
+import { recordHabitCompletion } from '../actions';
 
 interface Habit {
   id: string;
@@ -94,7 +95,9 @@ export default function HabitsClient() {
         const isCurrentToggled = dayIdx === todayIndex;
         let newStreak = h.streak;
         if (isCurrentToggled) {
-          newStreak = newHistory[dayIdx] ? h.streak + 1 : Math.max(0, h.streak - 1);
+          const isDone = newHistory[dayIdx];
+          newStreak = isDone ? h.streak + 1 : Math.max(0, h.streak - 1);
+          recordHabitCompletion(isDone ? 'increment' : 'decrement').catch(console.error);
         }
         return {
           ...h,

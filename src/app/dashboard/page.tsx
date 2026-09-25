@@ -1,6 +1,6 @@
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
-import { computeStreaks, DailyActivity } from '@/app/lib/streaks';
+import { getUserProductivityStats } from '@/app/lib/activity';
 import DashboardHomeClient from './DashboardHomeClient';
 import Link from 'next/link';
 import { FolderPlus, LayoutGrid, ArrowRight } from 'lucide-react';
@@ -24,33 +24,11 @@ export default async function DashboardPage() {
     .orderBy(p => p.createdAt.desc())
     .all();
 
-  // Calculate streak data
   const completedTasks = allTasks.filter(t => t.status === 'DONE');
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-  const countsByDate = new Map<string, number>();
-  for (const task of completedTasks) {
-    if (!task.updatedAt) continue;
-    const d = new Date(task.updatedAt);
-    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    countsByDate.set(dateStr, (countsByDate.get(dateStr) || 0) + 1);
-  }
-
-  // Create 91-day activity window
-  const activities: DailyActivity[] = [];
-  for (let i = 0; i < 91; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - (90 - i));
-    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    activities.push({
-      date: dateStr,
-      completed: countsByDate.get(dateStr) || 0,
-    });
-  }
-
-  const streakStats = computeStreaks(activities, todayStr);
-  const streakDays = streakStats.current > 0 ? streakStats.current : (countsByDate.size > 0 ? 1 : 0);
+  // Fetch productivity stats with freeze calculation
+  const productivityStats = await getUserProductivityStats(user.id);
+  const streakDays = productivityStats.currentStreak;
 
   // Compute completion rate for the past 7 days
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);

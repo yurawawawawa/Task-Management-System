@@ -10,7 +10,8 @@ const LEVEL_COLORS = {
   0: 'bg-[var(--color-primary-tint-3)]', // assuming CSS variables are available from theme or globals
   1: 'bg-[var(--color-primary-tint-2)]',
   2: 'bg-[var(--color-primary-tint-1)]',
-  3: 'bg-primary'
+  3: 'bg-primary',
+  4: 'bg-primary',
 };
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
