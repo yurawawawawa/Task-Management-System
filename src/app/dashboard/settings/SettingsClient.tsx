@@ -272,57 +272,56 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                 </div>
               </div>
 
-              {/* Accent Color Choice */}
-              <div>
-                <label
-                  className={`text-xs font-black block mb-2 ${
-                    isRetro ? 'text-[#1a2e1f]' : 'text-slate-700'
-                  }`}
-                >
-                  Warna Aksen Dominan
-                </label>
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setAccentColor('orange')}
-                    className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border-2 text-xs font-black transition-all cursor-pointer ${
-                      accentColor === 'orange'
-                        ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-500/30 text-blue-950 shadow-sm'
-                        : isRetro
-                        ? 'border-2 border-[#1a2e1f]/20 bg-white text-[#1a2e1f] hover:border-[#1a2e1f]/60'
-                        : 'border-2 border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="w-4 h-4 rounded-full bg-[#ff7a2f] shadow-xs flex items-center justify-center shrink-0">
-                      {accentColor === 'orange' && (
-                        <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
-                      )}
-                    </div>
-                    <span>Trekly Orange</span>
-                    <span className="text-[10px] opacity-60">(#ff7a2f)</span>
-                  </button>
+              {/* Accent Color Choice: only appears and selectable when Minimalist Clean is chosen */}
+              {themeStyle === 'minimal' && (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 pt-3 border-t border-slate-100">
+                  <div>
+                    <label className="text-xs font-black block mb-1 text-slate-700">
+                      Warna Aksen Dominan
+                    </label>
+                    <p className="text-xs text-slate-500">
+                      Pilih warna aksen utama yang akan diaplikasikan pada tombol, badge, dan highlight antarmuka.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setAccentColor('orange')}
+                      className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border-2 text-xs font-black transition-all cursor-pointer ${
+                        accentColor === 'orange'
+                          ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-500/30 text-blue-950 shadow-sm'
+                          : 'border-2 border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="w-4 h-4 rounded-full bg-[#ff7a2f] shadow-xs flex items-center justify-center shrink-0">
+                        {accentColor === 'orange' && (
+                          <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+                        )}
+                      </div>
+                      <span>Trekly Orange</span>
+                      <span className="text-[10px] opacity-60">(#ff7a2f)</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setAccentColor('green')}
-                    className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border-2 text-xs font-black transition-all cursor-pointer ${
-                      accentColor === 'green'
-                        ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-500/30 text-blue-950 shadow-sm'
-                        : isRetro
-                        ? 'border-2 border-[#1a2e1f]/20 bg-white text-[#1a2e1f] hover:border-[#1a2e1f]/60'
-                        : 'border-2 border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="w-4 h-4 rounded-full bg-[#1f4d2b] shadow-xs flex items-center justify-center shrink-0">
-                      {accentColor === 'green' && (
-                        <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
-                      )}
-                    </div>
-                    <span>Forest Green</span>
-                    <span className="text-[10px] opacity-60">(#1f4d2b)</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setAccentColor('green')}
+                      className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border-2 text-xs font-black transition-all cursor-pointer ${
+                        accentColor === 'green'
+                          ? 'border-blue-600 bg-blue-50/70 ring-2 ring-blue-500/30 text-blue-950 shadow-sm'
+                          : 'border-2 border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="w-4 h-4 rounded-full bg-[#1f4d2b] shadow-xs flex items-center justify-center shrink-0">
+                        {accentColor === 'green' && (
+                          <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+                        )}
+                      </div>
+                      <span>Forest Green</span>
+                      <span className="text-[10px] opacity-60">(#1f4d2b)</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Status Banner */}
               <div
@@ -335,8 +334,12 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                 <span className="font-bold opacity-80">Preferensi Tersimpan:</span>
                 <span className="font-black inline-flex items-center gap-2">
                   <span>{themeStyle === 'retro' ? 'Retro Playful' : 'Minimalist Clean'}</span>
-                  <span>&bull;</span>
-                  <span>{accentColor === 'orange' ? 'Trekly Orange' : 'Forest Green'}</span>
+                  {themeStyle === 'minimal' && (
+                    <>
+                      <span>&bull;</span>
+                      <span>{accentColor === 'orange' ? 'Trekly Orange' : 'Forest Green'}</span>
+                    </>
+                  )}
                   <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
                 </span>
               </div>
