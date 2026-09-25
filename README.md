@@ -17,6 +17,9 @@ Trekly adalah web app produktivitas bergaya retro-playful yang membantu kamu men
 
 </div>
 
+<img width="1080" height="1350" alt="Orange Gradient Modern Laptop Mockup Instagram Post" src="https://github.com/user-attachments/assets/66b01687-10af-4bdc-a4cd-b9aa98627a9e" />
+
+
 ---
 
 ## Daftar Isi
