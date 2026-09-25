@@ -198,12 +198,29 @@ export default function LandingPage({ user }: LandingPageProps) {
 
   return (
     <div className="landing-page-root w-full min-h-screen p-3 sm:p-6 md:p-10 text-[#1a2e1f]">
-      {/* OUTER STICKER FRAME */}
+      {/* OUTER STICKER FRAME — Hero 1 */}
       <div
         id="top"
         className="sticker-frame w-full max-w-7xl mx-auto rounded-[36px] overflow-hidden"
-        style={{ background: 'var(--green)' }}
+        style={{
+          backgroundImage: 'url(/background-landing-page.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
+          backgroundRepeat: 'no-repeat',
+          position: 'relative',
+        }}
       >
+        {/* Dark overlay agar teks tetap terbaca di atas gambar */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(20, 54, 28, 0.72)',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+        />
         {/* ========================================================
             NAVIGATION BAR
             ======================================================== */}
@@ -283,7 +300,7 @@ export default function LandingPage({ user }: LandingPageProps) {
         {/* ========================================================
             HERO SECTION (MINIMALIST & PUNCHY)
             ======================================================== */}
-        <section className="relative px-6 md:px-12 pt-8 md:pt-14 pb-0 overflow-hidden">
+        <section className="relative z-10 px-6 md:px-12 pt-8 md:pt-14 pb-0 overflow-hidden">
           {/* Curved Corner Spinning Starburst Badge */}
           <div
             className="absolute top-4 right-4 md:right-12 w-28 h-28 md:w-36 md:h-36 spin select-none pointer-events-none"
@@ -433,7 +450,7 @@ export default function LandingPage({ user }: LandingPageProps) {
         <svg
           viewBox="0 0 1200 80"
           preserveAspectRatio="none"
-          className="block w-full h-10 md:h-16 -mt-px"
+          className="relative z-10 block w-full h-10 md:h-16 -mt-px"
           aria-hidden="true"
           style={{ background: '#5fb572' }}
         >
