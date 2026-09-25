@@ -1,115 +1,144 @@
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
+import { computeStreaks, DailyActivity } from '@/app/lib/streaks';
+import DashboardHomeClient from './DashboardHomeClient';
 import Link from 'next/link';
-import { ProductivityMap } from './ProductivityMap';
-import { FolderPlus, MoreHorizontal, ArrowRight, LayoutGrid } from 'lucide-react';
+import { FolderPlus, LayoutGrid, ArrowRight } from 'lucide-react';
 
 export default async function DashboardPage() {
   const user = await getAuthUser();
   if (!user) return null;
 
+  const profile = await db.orm.public.Profile.where({ id: user.id }).first();
+
+  // Fetch all tasks for the user
+  const allTasks = await db.orm.public.Task
+    .where({ userId: user.id })
+    .orderBy(t => t.createdAt.desc())
+    .all();
+
+  // Fetch user projects
   const projects = await db.orm.public.Project
     .where({ userId: user.id })
     .include('tasks')
     .orderBy(p => p.createdAt.desc())
     .all();
 
-  return (
-    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 motion-reduce:animate-none motion-reduce:transform-none">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-12 gap-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground mb-2">Overview</h1>
-          <p className="text-muted-foreground text-sm">Select a project to manage its tasks.</p>
-        </div>
-        <Link
-          href="/dashboard/projects/new"
-          className="inline-flex items-center justify-center bg-primary text-primary-foreground px-5 h-11 md:h-9 rounded-xl font-medium text-sm hover:bg-primary-hover transition-all shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transform-none"
-        >
-          <FolderPlus className="w-4 h-4 mr-2" aria-hidden="true" />
-          Create Project
-        </Link>
-      </div>
+  // Calculate streak data
+  const completedTasks = allTasks.filter(t => t.status === 'DONE');
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-      {projects.length === 0 ? (
-        <div className="border border-dashed border-border rounded-2xl p-12 text-center flex flex-col items-center justify-center bg-white/50 opacity-0 animate-fade-in-up animate-delay-150">
-          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4 shadow-sm border border-border-light">
-            <LayoutGrid className="w-8 h-8 text-muted-foreground/80" aria-hidden="true" />
+  const countsByDate = new Map<string, number>();
+  for (const task of completedTasks) {
+    if (!task.updatedAt) continue;
+    const d = new Date(task.updatedAt);
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    countsByDate.set(dateStr, (countsByDate.get(dateStr) || 0) + 1);
+  }
+
+  // Create 91-day activity window
+  const activities: DailyActivity[] = [];
+  for (let i = 0; i < 91; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - (90 - i));
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    activities.push({
+      date: dateStr,
+      completed: countsByDate.get(dateStr) || 0,
+    });
+  }
+
+  const streakStats = computeStreaks(activities, todayStr);
+  const streakDays = streakStats.current > 0 ? streakStats.current : (countsByDate.size > 0 ? 1 : 0);
+
+  // Compute completion rate for the past 7 days
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const recentTasks = allTasks.filter(t => new Date(t.createdAt) >= sevenDaysAgo);
+  const completedRecentTasks = recentTasks.filter(t => t.status === 'DONE');
+  const weeklyCompletionRate = recentTasks.length > 0 
+    ? Math.round((completedRecentTasks.length / recentTasks.length) * 100) 
+    : 85;
+
+  return (
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <DashboardHomeClient
+        userName={profile?.name || user.email?.split('@')[0] || 'Teman Produktif'}
+        tasks={allTasks.map(t => ({
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          status: t.status as any,
+          priority: t.priority as any,
+          createdAt: t.createdAt,
+        }))}
+        streakDays={streakDays}
+        weeklyCompletionRate={weeklyCompletionRate}
+        totalWeeklyTasks={recentTasks.length || allTasks.length}
+        completedWeeklyTasks={completedRecentTasks.length || completedTasks.length}
+      />
+
+      {/* Projects Overview section at bottom of dashboard */}
+      <div className="pt-6 border-t border-border">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+          <div>
+            <h2 className="text-xl font-black text-foreground tracking-tight">Proyek & Workspace</h2>
+            <p className="text-xs text-muted-foreground">Kumpulan proyek untuk mengorganisir target jangka panjangmu</p>
           </div>
-          <h3 className="text-lg font-semibold text-foreground mb-1">No projects found</h3>
-          <p className="text-muted-foreground text-sm mb-6 max-w-sm">
-            Get started by creating a new project. Projects are used to group related tasks together.
-          </p>
           <Link
             href="/dashboard/projects/new"
-            className="inline-flex items-center justify-center bg-white text-foreground border border-border px-5 h-11 md:h-9 rounded-lg font-medium text-sm hover:bg-muted hover:border-border transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-muted text-foreground border-2 border-border rounded-2xl text-xs font-black transition-all shadow-2xs"
           >
-            Create your first project
+            <FolderPlus className="w-4 h-4" />
+            <span>Buat Proyek Baru</span>
           </Link>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <ProductivityMap userId={user.id} />
-          {projects.map((project, index) => {
-            const completedTasks = project.tasks.filter((t: any) => t.status === 'DONE').length;
-            const totalTasks = project.tasks.length;
-            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            
-            const delayMap: Record<number, string> = {
-              0: 'animate-delay-150',
-              1: 'animate-delay-200',
-              2: 'animate-delay-250',
-              3: 'animate-delay-300',
-              4: 'animate-delay-400',
-            };
-            const delayClass = delayMap[index] || 'animate-delay-400';
 
-            return (
-              <Link
-                key={project.id}
-                href={`/dashboard/projects/${project.id}`}
-                className={`group relative bg-white p-6 rounded-2xl border border-border hover:border-primary/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all flex flex-col h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 opacity-0 animate-fade-in-up ${delayClass}`}
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-muted border border-border-light flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    <LayoutGrid className="w-5 h-5" aria-hidden="true" />
-                  </div>
-                  <div className="text-muted-foreground/80 hover:text-foreground transition-colors p-2.5 -mr-2 -mt-2 rounded-lg hover:bg-muted flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-[36px] md:min-h-[36px] md:p-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" aria-label="More options">
-                    <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
-                  </div>
-                </div>
+        {projects.length === 0 ? (
+          <div className="bg-white p-8 rounded-3xl border-2 border-dashed border-border text-center">
+            <p className="text-sm font-bold text-muted-foreground">Belum ada proyek terpisah.</p>
+            <p className="text-xs text-muted-foreground mt-1">Kamu bisa mengelola task secara langsung di Tasks / Board atau membuat proyek baru.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {projects.map((project) => {
+              const comp = project.tasks.filter((t: any) => t.status === 'DONE').length;
+              const total = project.tasks.length;
+              const prog = total > 0 ? Math.round((comp / total) * 100) : 0;
 
-                <h3 className="text-lg font-bold text-foreground mb-1 tracking-tight truncate">
-                  {project.name}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-6 line-clamp-2 leading-relaxed flex-1">
-                  {project.description || 'No description provided.'}
-                </p>
-                
-                <div className="mt-auto pt-5 border-t border-border-light">
-                  <div className="flex justify-between items-end mb-2">
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Progress</span>
-                    <span className="text-xs font-bold text-foreground">{progress}%</span>
+              return (
+                <Link
+                  key={project.id}
+                  href={`/dashboard/projects/${project.id}`}
+                  className="group bg-white p-5 rounded-3xl border-2 border-border hover:border-primary/40 hover:shadow-xs transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                        <LayoutGrid className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-black text-muted-foreground">{prog}% Selesai</span>
+                    </div>
+                    <h3 className="font-extrabold text-foreground group-hover:text-primary transition-colors text-base truncate">
+                      {project.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                      {project.description || 'Tidak ada deskripsi'}
+                    </p>
                   </div>
-                  <div className="w-full bg-muted-hover rounded-full h-1.5 mb-4 overflow-hidden">
-                    <div 
-                      className="bg-primary h-1.5 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none" 
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground font-medium">
-                      {totalTasks} tasks
-                    </span>
-                    <span className="text-muted-foreground/80 group-hover:text-foreground transition-colors flex items-center font-medium">
-                      Open <ArrowRight className="w-4 h-4 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true" />
+
+                  <div className="mt-5 pt-3 border-t border-border flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground font-semibold">{total} tasks</span>
+                    <span className="font-bold text-foreground flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      Buka <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
-                </div>
-              </Link>
-            )
-          })}
-        </div>
-      )}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

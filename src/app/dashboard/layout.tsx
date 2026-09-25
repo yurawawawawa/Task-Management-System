@@ -4,6 +4,8 @@ import { db } from '@/prisma/db';
 import Link from 'next/link';
 import LogoutButton from './LogoutButton';
 import MobileNav from './MobileNav';
+import SidebarNav from './SidebarNav';
+import TreklyLogo from '@/app/components/TreklyLogo';
 
 export default async function DashboardLayout({
   children,
@@ -19,57 +21,73 @@ export default async function DashboardLayout({
   const profile = await db.orm.public.Profile.where({ id: authUser.id }).first();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-sans relative overflow-hidden">
-      {/* Subtle Background Pattern matching Auth Layout */}
-      <div className="absolute top-0 left-0 w-full h-[500px] overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-[-20%] left-[20%] w-[800px] h-[400px] bg-gray-200/40 rounded-[100%] blur-[80px] opacity-60 mix-blend-multiply"></div>
-      </div>
-
-      {/* Top Navigation (Vercel/Linear style) */}
-      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-background/80 border-b border-border/80">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center lg:gap-8">
-            <MobileNav />
-            <Link href="/dashboard" className="flex items-center gap-2 transition-opacity hover:opacity-80 min-h-[44px] md:min-h-0">
-              <div className="w-7 h-7 bg-primary text-primary-foreground rounded-[6px] flex items-center justify-center font-bold text-sm shadow-sm">
-                T
-              </div>
-              <span className="font-bold tracking-tight text-foreground hidden sm:block">Taskora</span>
-            </Link>
-            
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium ml-8" aria-label="Main Navigation">
-              <Link href="/dashboard" className="text-foreground relative after:absolute after:bottom-[-21px] after:left-0 after:w-full after:h-[2px] after:bg-primary"
-                aria-current="page"
-              >
-                Projects
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                My Tasks
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                Settings
-              </Link>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="hidden md:flex flex-col items-end mr-2">
-              <span className="text-sm font-semibold text-foreground leading-none">{profile?.name}</span>
-              <span className="text-xs text-muted-foreground mt-1">{authUser.email}</span>
+    <div className="min-h-screen bg-[#faf9f5] flex flex-col md:flex-row font-sans relative">
+      {/* Desktop Sidebar Navigation */}
+      <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r-2 border-border bg-white sticky top-0 h-screen z-30">
+        {/* Brand header */}
+        <div className="p-5 border-b border-border/80 flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2.5 group">
+            <TreklyLogo className="w-8 h-8 text-[#1a2e1f] group-hover:scale-105 transition-transform" />
+            <div>
+              <span className="font-extrabold text-base tracking-tight text-foreground block leading-tight">
+                Trekly
+              </span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                Personal Productivity
+              </span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-gray-800 to-black text-primary-foreground flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white shrink-0">
+          </Link>
+        </div>
+
+        {/* Sidebar Nav links & Gamification widget */}
+        <div className="flex-1 overflow-y-auto">
+          <SidebarNav />
+        </div>
+
+        {/* Profile Card & Logout in Sidebar Footer */}
+        <div className="p-4 border-t border-border/80 bg-muted/20 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-gray-800 to-black text-primary-foreground flex items-center justify-center text-xs font-black shadow-sm ring-2 ring-white shrink-0">
               {profile?.name?.[0]?.toUpperCase() || 'U'}
             </div>
-            <div className="w-px h-6 bg-gray-200 mx-1 hidden sm:block"></div>
-            <LogoutButton />
+            <div className="min-w-0">
+              <p className="text-xs font-extrabold text-foreground truncate leading-tight">
+                {profile?.name || 'Trekly User'}
+              </p>
+              <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
+                {authUser.email}
+              </p>
+            </div>
           </div>
+          <LogoutButton />
         </div>
-      </header>
+      </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-16">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        {/* Mobile Top Header */}
+        <header className="md:hidden sticky top-0 z-40 w-full backdrop-blur-md bg-white/90 border-b border-border px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MobileNav />
+            <Link href="/dashboard" className="flex items-center gap-2 font-bold">
+              <TreklyLogo className="w-7 h-7 text-[#1a2e1f]" />
+              <span className="font-extrabold tracking-tight text-foreground">Trekly</span>
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-gray-800 to-black text-primary-foreground flex items-center justify-center text-[10px] font-bold">
+              {profile?.name?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <LogoutButton />
+          </div>
+        </header>
+
+        {/* Main View Area */}
+        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

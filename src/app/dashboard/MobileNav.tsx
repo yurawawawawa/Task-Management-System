@@ -3,13 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, FolderKanban, CheckSquare, Settings } from 'lucide-react';
-
-const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Projects', icon: FolderKanban },
-  { href: '#', label: 'My Tasks', icon: CheckSquare },
-  { href: '#', label: 'Settings', icon: Settings },
-] as const;
+import { Menu, X, Snowflake, Flame } from 'lucide-react';
+import { DASHBOARD_NAV_ITEMS } from './SidebarNav';
+import TreklyLogo from '@/app/components/TreklyLogo';
 
 export default function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -87,11 +83,9 @@ export default function MobileNav() {
           {/* Drawer header */}
           <div className="flex items-center justify-between px-5 h-16 border-b border-border-light shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-primary text-primary-foreground rounded-[6px] flex items-center justify-center font-bold text-sm shadow-sm">
-                T
-              </div>
+              <TreklyLogo className="w-7 h-7 text-[#1a2e1f]" />
               <span className="font-bold tracking-tight text-foreground">
-                Taskora
+                Trekly
               </span>
             </div>
             <button
@@ -104,29 +98,67 @@ export default function MobileNav() {
           </div>
 
           {/* Nav links — each ≥44px tall for touch */}
-          <div className="flex-1 overflow-y-auto py-3 px-3">
-            <div className="space-y-1">
-              {NAV_ITEMS.map((item) => {
-                const isActive = item.href === '/dashboard'
-                  ? pathname === '/dashboard'
-                  : pathname?.startsWith(item.href) && item.href !== '#';
+          <div className="flex-1 overflow-y-auto py-3 px-3 flex flex-col justify-between">
+            <div className="space-y-1.5">
+              <div className="px-3 pb-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">
+                Menu Utama
+              </div>
+              {DASHBOARD_NAV_ITEMS.map((item) => {
+                const isActive = item.exact
+                  ? pathname === item.href
+                  : pathname?.startsWith(item.href);
 
                 return (
                   <Link
-                    key={item.label}
+                    key={item.href}
                     href={item.href}
                     onClick={close}
-                    className={`flex items-center gap-3 min-h-[44px] px-3 rounded-xl font-medium text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
+                    className={`flex items-center justify-between min-h-[44px] px-3.5 rounded-xl font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
                       isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted-hover hover:text-foreground active:bg-muted-hover'
+                        ? item.highlight
+                          ? 'bg-[#ff7a2f] text-white shadow-sm'
+                          : 'bg-primary text-primary-foreground shadow-sm'
+                        : item.highlight
+                        ? 'text-foreground hover:bg-[#ff7a2f]/10 hover:text-[#ff7a2f]'
+                        : 'text-muted-foreground hover:bg-muted-hover hover:text-foreground'
                     }`}
                   >
-                    <item.icon className="w-[18px] h-[18px] shrink-0" aria-hidden="true" />
-                    {item.label}
+                    <div className="flex items-center gap-3">
+                      <item.icon className="w-5 h-5 shrink-0" aria-hidden="true" />
+                      <span>{item.label}</span>
+                    </div>
+
+                    {item.badge && (
+                      <span
+                        className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                          isActive
+                            ? 'bg-white/20 text-white border-white/40'
+                            : 'bg-[#ff7a2f]/15 text-[#ff7a2f] border-[#ff7a2f]/30'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
+            </div>
+
+            {/* Streak Freeze Gamification banner in drawer */}
+            <div className="p-3 my-4 rounded-xl border border-border bg-gradient-to-br from-amber-50 to-orange-50">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="flex items-center gap-1.5 text-xs font-black text-[#ff7a2f]">
+                  <Flame className="w-4 h-4 fill-[#ff7a2f]" />
+                  Streak 7 Hari
+                </span>
+                <span className="flex items-center gap-1 text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-200">
+                  <Snowflake className="w-3 h-3 text-sky-600" />
+                  2 Freeze
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Pertahankan ritme harianmu agar streak tidak terputus.
+              </p>
             </div>
           </div>
         </nav>

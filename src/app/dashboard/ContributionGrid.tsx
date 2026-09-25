@@ -90,7 +90,7 @@ export function ContributionGrid({ data, todayStr }: Props) {
                 const tooltipText = isFuture
                   ? `No activity yet · ${formatDateLabel(day.date)}`
                   : day.completed === 0
-                    ? `Rest day 😴 · ${formatDateLabel(day.date)}`
+                    ? `Rest day · ${formatDateLabel(day.date)}`
                     : `${day.completed} tasks completed · ${formatDateLabel(day.date)}`;
 
                 return (

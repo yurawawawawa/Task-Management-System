@@ -1,4 +1,4 @@
-// Taskora — Phase 1 MVP Database Schema
+// Trekly — Phase 1 MVP Database Schema
 // Database: Supabase PostgreSQL
 // Auth: Supabase Auth (auth.users managed by Supabase)
 // use prisma-8

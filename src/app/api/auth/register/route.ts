@@ -14,6 +14,22 @@ export async function POST(request: Request) {
     }
     const { email, password, name } = result.data;
 
+    // Check if user already exists in Prisma database
+    const existingProfile = await db.orm.public.Profile
+      .where({ email })
+      .first();
+
+    if (existingProfile) {
+      return NextResponse.json(
+        {
+          error: 'Akun dengan email ini sudah terdaftar',
+          code: 'USER_ALREADY_EXISTS',
+          email,
+        },
+        { status: 409 }
+      );
+    }
+
     // 2. Create user in Supabase Auth
     const supabase = await createClient();
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -25,6 +41,22 @@ export async function POST(request: Request) {
     });
 
     if (authError) {
+      const isAlreadyRegistered =
+        authError.message.toLowerCase().includes('already registered') ||
+        authError.message.toLowerCase().includes('already exists') ||
+        authError.status === 422;
+
+      if (isAlreadyRegistered) {
+        return NextResponse.json(
+          {
+            error: 'Akun dengan email ini sudah terdaftar',
+            code: 'USER_ALREADY_EXISTS',
+            email,
+          },
+          { status: 409 }
+        );
+      }
+
       return NextResponse.json({ error: authError.message }, { status: 400 });
     }
 
@@ -32,9 +64,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
     }
 
+    // In Supabase, when email enumeration protection is enabled,
+    // signUp for an existing user returns a dummy user with empty identities array
+    if (authData.user.identities && authData.user.identities.length === 0) {
+      return NextResponse.json(
+        {
+          error: 'Akun dengan email ini sudah terdaftar',
+          code: 'USER_ALREADY_EXISTS',
+          email,
+        },
+        { status: 409 }
+      );
+    }
+
     // 3. Create Profile in our Prisma database
-    // Because Supabase might return the user before email verification (depending on settings),
-    // we create the profile immediately using the auth.users.id
     try {
       const profile = await db.orm.public.Profile.create({
         id: authData.user.id,
@@ -47,10 +90,25 @@ export async function POST(request: Request) {
         { status: 201 }
       );
     } catch (dbError: any) {
-      // If DB creation fails (e.g., unique constraint on email if somehow out of sync)
       console.error('Failed to create profile:', dbError);
-      // In a real production app, we might want to clean up the Supabase auth user here 
-      // or rely on a Supabase database trigger to create the profile.
+      
+      // If unique constraint violation on email
+      const isUniqueError =
+        dbError?.message?.includes('unique') ||
+        dbError?.code === 'P2002' ||
+        dbError?.message?.includes('duplicate key');
+
+      if (isUniqueError) {
+        return NextResponse.json(
+          {
+            error: 'Akun dengan email ini sudah terdaftar',
+            code: 'USER_ALREADY_EXISTS',
+            email,
+          },
+          { status: 409 }
+        );
+      }
+
       return NextResponse.json(
         { error: 'Failed to create user profile' },
         { status: 500 }

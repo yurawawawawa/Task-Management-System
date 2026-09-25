@@ -86,3 +86,159 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* ========================================================
+   Trekly Retro Groovy & Neo-Brutalist Sticker Design System
+   ======================================================== */
+:root {
+  --green: #1f4d2b;
+  --green2: #2d6a3e;
+  --cream: #fbf3e0;
+  --yellow: #ffc93c;
+  --pink: #ff7eb6;
+  --orange: #ff7a2f;
+  --sky: #bfe3f0;
+  --ink: #1a2e1f;
+}
+
+.landing-page-root {
+  font-family: 'Alegreya Sans', sans-serif;
+  background-color: #f7f2e7;
+  background-image: radial-gradient(rgba(26, 46, 31, 0.14) 2px, transparent 2px);
+  background-size: 22px 22px;
+}
+
+.groovy {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-variation-settings: "SOFT" 100, "WONK" 1;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.sticker-frame {
+  border: 4px solid var(--ink);
+  box-shadow: 10px 10px 0 var(--ink);
+}
+
+.pill {
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 4px 4px 0 var(--ink);
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.pill:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.pill:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: 3px dashed var(--yellow);
+  outline-offset: 4px;
+}
+
+.card-pop {
+  border: 3px solid var(--ink);
+  border-radius: 28px;
+  box-shadow: 6px 6px 0 var(--ink);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.spin {
+  animation: spin 18s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rise {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.bob {
+  animation: bob 4s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.facts-rule {
+  border-top: 10px solid var(--ink);
+}
+
+.facts-row {
+  border-top: 1.5px solid var(--ink);
+}
+
+.streak-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  transition: transform 0.15s ease;
+}
+
+.streak-cell:hover {
+  transform: scale(1.22);
+  z-index: 10;
+}
+
+.kb-col {
+  min-height: 110px;
+  transition: outline 0.15s ease, background-color 0.15s ease;
+}
+
+.kb-col.drag-over {
+  outline: 3px dashed var(--orange);
+  background-color: #fff9ed;
+}
+
+.kb-chip {
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.kb-chip:hover {
+  transform: translateY(-2px);
+}
+
+.kb-chip:active {
+  cursor: grabbing;
+}
+
+.rotated-bg {
+  transform: rotate(-8deg);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin, .bob, .rise {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
