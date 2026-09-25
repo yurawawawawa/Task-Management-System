@@ -76,21 +76,23 @@ export default function MobileNav() {
           role="dialog"
           aria-modal="true"
           aria-label="Navigation menu"
-          className={`absolute top-0 left-0 h-full w-[280px] max-w-[85vw] bg-background border-r border-border/80 shadow-2xl flex flex-col transition-transform duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+          className={`absolute top-0 left-0 h-full w-[280px] max-w-[85vw] bg-[#1f4d2b] text-[#fbf3e0] border-r-[3.5px] border-[#1a2e1f] shadow-2xl flex flex-col transition-transform duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           {/* Drawer header */}
-          <div className="flex items-center justify-between px-5 h-16 border-b border-border-light shrink-0">
-            <div className="flex items-center gap-2">
-              <TreklyLogo className="w-7 h-7 text-[#1a2e1f]" />
-              <span className="font-bold tracking-tight text-foreground">
+          <div className="flex items-center justify-between px-5 h-16 border-b-[3px] border-[#163820] bg-[#173e21] shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#ffc93c] border-2 border-[#1a2e1f] flex items-center justify-center">
+                <TreklyLogo className="w-5 h-5 text-[#1a2e1f]" />
+              </div>
+              <span className="font-['Fraunces',serif] font-black text-xl tracking-tight text-[#fbf3e0]">
                 Trekly
               </span>
             </div>
             <button
               onClick={close}
-              className="text-muted-foreground/80 hover:text-foreground hover:bg-muted-hover rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px] -mr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="text-[#fbf3e0]/80 hover:text-white p-2 rounded-lg transition-colors flex items-center justify-center min-w-[44px] min-h-[44px] -mr-2"
               aria-label="Close menu"
             >
               <X className="w-5 h-5" aria-hidden="true" />
@@ -98,9 +100,9 @@ export default function MobileNav() {
           </div>
 
           {/* Nav links — each ≥44px tall for touch */}
-          <div className="flex-1 overflow-y-auto py-3 px-3 flex flex-col justify-between">
-            <div className="space-y-1.5">
-              <div className="px-3 pb-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">
+          <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="px-3 pb-1 text-[11px] font-black uppercase tracking-wider text-[#ffc93c]">
                 Menu Utama
               </div>
               {DASHBOARD_NAV_ITEMS.map((item) => {
@@ -113,14 +115,14 @@ export default function MobileNav() {
                     key={item.href}
                     href={item.href}
                     onClick={close}
-                    className={`flex items-center justify-between min-h-[44px] px-3.5 rounded-xl font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
+                    className={`flex items-center justify-between min-h-[44px] px-3.5 rounded-2xl font-black text-sm transition-all ${
                       isActive
                         ? item.highlight
-                          ? 'bg-[#ff7a2f] text-white shadow-sm'
-                          : 'bg-primary text-primary-foreground shadow-sm'
+                          ? 'bg-[#ff7a2f] text-white border-[2.5px] border-[#1a2e1f] shadow-[3px_3px_0px_#1a2e1f]'
+                          : 'bg-[#bfe3f0] text-[#1a2e1f] border-[2.5px] border-[#1a2e1f] shadow-[3px_3px_0px_#1a2e1f]'
                         : item.highlight
-                        ? 'text-foreground hover:bg-[#ff7a2f]/10 hover:text-[#ff7a2f]'
-                        : 'text-muted-foreground hover:bg-muted-hover hover:text-foreground'
+                        ? 'text-[#fbf3e0] hover:bg-white/10 hover:text-[#ffc93c]'
+                        : 'text-[#fbf3e0]/80 hover:bg-white/10 hover:text-white'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -130,11 +132,7 @@ export default function MobileNav() {
 
                     {item.badge && (
                       <span
-                        className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                          isActive
-                            ? 'bg-white/20 text-white border-white/40'
-                            : 'bg-[#ff7a2f]/15 text-[#ff7a2f] border-[#ff7a2f]/30'
-                        }`}
+                        className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f] bg-[#ffc93c] text-[#1a2e1f]"
                       >
                         {item.badge}
                       </span>
@@ -145,18 +143,18 @@ export default function MobileNav() {
             </div>
 
             {/* Streak Freeze Gamification banner in drawer */}
-            <div className="p-3 my-4 rounded-xl border border-border bg-gradient-to-br from-amber-50 to-orange-50">
+            <div className="p-3.5 my-4 rounded-2xl border-[3px] border-[#1a2e1f] shadow-[4px_4px_0px_#1a2e1f] bg-[#ffeed0] text-[#1a2e1f]">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="flex items-center gap-1.5 text-xs font-black text-[#ff7a2f]">
-                  <Flame className="w-4 h-4 fill-[#ff7a2f]" />
+                <span className="flex items-center gap-1.5 text-xs font-black text-[#1a2e1f]">
+                  <Flame className="w-4 h-4 fill-[#ff7a2f] text-[#ff7a2f] animate-pulse" />
                   Streak 7 Hari
                 </span>
-                <span className="flex items-center gap-1 text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-200">
-                  <Snowflake className="w-3 h-3 text-sky-600" />
+                <span className="flex items-center gap-1 text-[10px] font-black text-[#1a2e1f] bg-[#bfe3f0] px-2 py-0.5 rounded-full border-[1.5px] border-[#1a2e1f] shadow-[1px_1px_0px_#1a2e1f]">
+                  <Snowflake className="w-3 h-3 text-[#0a93c7]" />
                   2 Freeze
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[11px] font-medium text-[#1a2e1f]/80 leading-snug">
                 Pertahankan ritme harianmu agar streak tidak terputus.
               </p>
             </div>

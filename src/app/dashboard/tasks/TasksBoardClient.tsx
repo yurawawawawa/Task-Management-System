@@ -14,7 +14,8 @@ import {
   Search,
   Filter,
   Sparkles,
-  GripVertical
+  GripVertical,
+  Zap
 } from 'lucide-react';
 import {
   DndContext,
@@ -69,38 +70,51 @@ function TaskCardView({
   onMoveStatus,
   dragHandleProps,
 }: TaskCardViewProps) {
-  const priorityColor = {
-    LOW: 'bg-gray-100 text-gray-700 border-gray-200',
-    MEDIUM: 'bg-blue-50 text-blue-700 border-blue-200',
-    HIGH: 'bg-amber-50 text-amber-700 border-amber-200',
-    URGENT: 'bg-red-50 text-red-700 border-red-200',
+  // Palet prioritas: pink (#ff7eb6), oranye (#ff7a2f), kuning (#ffc93c), netral (#fbf3e0)
+  const priorityConfig = {
+    URGENT: {
+      bg: 'bg-[#ff7eb6] text-[#1a2e1f] border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
+      label: 'URGENT',
+    },
+    HIGH: {
+      bg: 'bg-[#ff7a2f] text-white border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
+      label: 'HIGH',
+    },
+    MEDIUM: {
+      bg: 'bg-[#ffc93c] text-[#1a2e1f] border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
+      label: 'MED',
+    },
+    LOW: {
+      bg: 'bg-[#fbf3e0] text-[#1a2e1f] border-2 border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f]',
+      label: 'LOW',
+    },
   }[task.priority || 'MEDIUM'];
 
   if (isDragging) {
     return (
-      <div className="bg-primary/5 rounded-2xl border-2 border-dashed border-primary/40 h-[105px] opacity-40 shadow-inner" />
+      <div className="bg-[#1a2e1f]/5 rounded-[22px] border-[3px] border-dashed border-[#1a2e1f]/40 h-[105px] opacity-40 shadow-inner" />
     );
   }
 
   return (
     <div
-      className={`bg-white p-4 rounded-2xl border-2 transition-all space-y-3 group select-none ${
+      className={`bg-white p-4 rounded-[22px] border-[3px] border-[#1a2e1f] transition-all space-y-3 group select-none ${
         isOverlay
-          ? 'border-primary ring-2 ring-primary/40 shadow-2xl rotate-1 scale-105 cursor-grabbing'
-          : 'border-border shadow-2xs hover:border-primary/50 hover:shadow-xs'
+          ? 'shadow-[10px_10px_0px_#1a2e1f] rotate-2 scale-105 cursor-grabbing z-50'
+          : 'shadow-[4px_4px_0px_#1a2e1f] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#1a2e1f] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_#1a2e1f]'
       }`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <div
             {...dragHandleProps}
-            className="cursor-grab active:cursor-grabbing p-1 -m-1 rounded-md text-muted-foreground/40 group-hover:text-muted-foreground hover:bg-muted transition-colors"
+            className="cursor-grab active:cursor-grabbing p-1.5 -m-1 rounded-lg text-[#1a2e1f]/40 group-hover:text-[#1a2e1f] hover:bg-[#fbf3e0] border border-transparent hover:border-[#1a2e1f] transition-all"
             title="Tahan dan geser (atau gunakan Spasi/Enter untuk navigasi keyboard)"
           >
             <GripVertical className="w-4 h-4" />
           </div>
-          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${priorityColor}`}>
-            {task.priority || 'MED'}
+          <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${priorityConfig.bg}`}>
+            {priorityConfig.label}
           </span>
         </div>
 
@@ -112,7 +126,7 @@ function TaskCardView({
               e.stopPropagation();
               onDelete(task.id);
             }}
-            className="text-muted-foreground/60 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 p-1 rounded-md"
+            className="text-[#1a2e1f]/40 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 border border-transparent hover:border-red-300"
             title="Hapus task"
           >
             <Trash2 className="w-4 h-4" />
@@ -120,13 +134,13 @@ function TaskCardView({
         )}
       </div>
 
-      <p className={`text-sm font-extrabold tracking-tight ${task.status === 'DONE' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+      <p className={`text-sm font-extrabold tracking-tight text-[#1a2e1f] leading-snug ${task.status === 'DONE' ? 'line-through text-[#1a2e1f]/40' : ''}`}>
         {task.title}
       </p>
 
-      {/* Manual Status Buttons as Accessible Fallback */}
+      {/* Manual Status Buttons with Pill Sticker Style */}
       {onMoveStatus && (
-        <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+        <div className="pt-2.5 border-t-2 border-[#1a2e1f]/15 flex items-center justify-between text-xs">
           {task.status !== 'TODO' && (
             <button
               type="button"
@@ -135,10 +149,10 @@ function TaskCardView({
                 e.stopPropagation();
                 onMoveStatus(task.id, task.status === 'DONE' ? 'IN_PROGRESS' : 'TODO');
               }}
-              className="inline-flex items-center gap-1 font-bold hover:text-foreground transition-colors px-1 py-0.5 rounded"
+              className="inline-flex items-center gap-1 font-black text-[#1a2e1f] bg-[#fbf3e0] hover:bg-white border-[2px] border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f] px-2.5 py-1 rounded-full text-[11px] transition-all hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0.5px_0.5px_0px_#1a2e1f]"
               title="Kembalikan ke status sebelumnya"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
+              <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Mundur</span>
             </button>
           )}
@@ -153,14 +167,18 @@ function TaskCardView({
                 e.stopPropagation();
                 onMoveStatus(task.id, task.status === 'TODO' ? 'IN_PROGRESS' : 'DONE');
               }}
-              className="inline-flex items-center gap-1 font-black text-primary hover:text-primary-hover ml-auto transition-colors px-1 py-0.5 rounded"
+              className={`inline-flex items-center gap-1 font-black text-xs px-3.5 py-1 rounded-full border-[2px] border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#1a2e1f] ml-auto transition-all ${
+                task.status === 'TODO'
+                  ? 'bg-[#ffc93c] hover:bg-[#ffbe1a] text-[#1a2e1f]'
+                  : 'bg-[#2d6a3e] hover:bg-[#235331] text-white'
+              }`}
             >
               <span>{task.status === 'TODO' ? 'Mulai Kerja' : 'Selesaikan'}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
             </button>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 ml-auto">
-              <CheckCircle2 className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#2d6a3e] bg-[#dcfce7] border-[2px] border-[#1a2e1f] shadow-[1.5px_1.5px_0px_#1a2e1f] px-3 py-0.5 rounded-full ml-auto">
+              <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Selesai</span>
             </span>
           )}
@@ -205,7 +223,7 @@ function SortableTaskCard({
       style={style}
       {...attributes}
       {...listeners}
-      className="cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-2xl"
+      className="cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-[#1a2e1f] rounded-[22px]"
     >
       <TaskCardView
         task={task}
@@ -242,59 +260,58 @@ function KanbanColumn({
     },
   });
 
+  // Palet kolom: TO DO (cream/netral #fff9ed), IN PROGRESS (biru pastel #e6f4fa), DONE (hijau pastel #e8f7ec)
   const columnConfig = {
     TODO: {
-      dot: 'bg-gray-400',
-      titleColor: 'text-foreground',
-      countBorder: 'border-border text-foreground',
-      defaultBorder: 'border-border',
-      defaultBg: 'bg-muted/30',
-      activeBorder: 'border-primary ring-2 ring-primary/20 bg-primary/5',
+      dot: 'bg-[#ffc93c] border-2 border-[#1a2e1f]',
+      defaultBg: 'bg-[#fff9ed]',
+      highlightBg: 'bg-[#fff3db] ring-2 ring-[#ff7a2f] shadow-[8px_8px_0px_#ff7a2f]',
       emptyText: 'Tidak ada task di antrean To Do',
       dropPrompt: 'Lepaskan task di To Do',
+      emptyIcon: Clock,
+      emptyBadgeColor: 'bg-[#ffc93c] text-[#1a2e1f]',
     },
     IN_PROGRESS: {
-      dot: 'bg-blue-500 animate-pulse',
-      titleColor: 'text-blue-900',
-      countBorder: 'border-blue-200 text-blue-900',
-      defaultBorder: 'border-blue-200/80',
-      defaultBg: 'bg-blue-50/40',
-      activeBorder: 'border-blue-500 ring-2 ring-blue-300/40 bg-blue-100/50',
+      dot: 'bg-[#0a93c7] border-2 border-[#1a2e1f]',
+      defaultBg: 'bg-[#e6f4fa]',
+      highlightBg: 'bg-[#d2edf7] ring-2 ring-[#0a93c7] shadow-[8px_8px_0px_#0a93c7]',
       emptyText: 'Belum ada task yang sedang dikerjakan',
       dropPrompt: 'Lepaskan task di In Progress',
+      emptyIcon: Zap,
+      emptyBadgeColor: 'bg-[#bfe3f0] text-[#0a93c7]',
     },
     DONE: {
-      dot: 'bg-emerald-600',
-      titleColor: 'text-emerald-900',
-      countBorder: 'border-emerald-200 text-emerald-900',
-      defaultBorder: 'border-emerald-200/80',
-      defaultBg: 'bg-emerald-50/40',
-      activeBorder: 'border-emerald-500 ring-2 ring-emerald-300/40 bg-emerald-100/50',
+      dot: 'bg-[#2d6a3e] border-2 border-[#1a2e1f]',
+      defaultBg: 'bg-[#e8f7ec]',
+      highlightBg: 'bg-[#d6f2dc] ring-2 ring-[#2d6a3e] shadow-[8px_8px_0px_#2d6a3e]',
       emptyText: 'Selesaikan task untuk mencatat progres di sini',
       dropPrompt: 'Lepaskan task di Done',
+      emptyIcon: CheckCircle2,
+      emptyBadgeColor: 'bg-[#dcfce7] text-[#2d6a3e]',
     },
   }[id];
 
   const taskIds = useMemo(() => tasks.map((t) => t.id), [tasks]);
+  const EmptyIcon = columnConfig.emptyIcon;
 
   return (
     <div
       ref={setNodeRef}
-      className={`p-5 rounded-3xl border-2 transition-all space-y-4 flex flex-col min-h-[460px] ${
+      className={`p-5 sm:p-6 rounded-[28px] border-[3.5px] border-[#1a2e1f] transition-all space-y-4 flex flex-col min-h-[480px] ${
         isHighlighted
-          ? columnConfig.activeBorder
-          : `${columnConfig.defaultBorder} ${columnConfig.defaultBg}`
+          ? columnConfig.highlightBg
+          : `${columnConfig.defaultBg} shadow-[6px_6px_0px_#1a2e1f]`
       }`}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-border/80">
-        <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${columnConfig.dot}`} />
-          <h3 className={`font-black text-sm uppercase tracking-wider ${columnConfig.titleColor}`}>
+      {/* Column Header */}
+      <div className="flex items-center justify-between pb-3.5 border-b-[2.5px] border-[#1a2e1f]/20">
+        <div className="flex items-center gap-2.5">
+          <div className={`w-3.5 h-3.5 rounded-full ${columnConfig.dot}`} />
+          <h3 className="font-['Fraunces',serif] font-black text-base uppercase tracking-wider text-[#1a2e1f]">
             {title}
           </h3>
         </div>
-        <span className={`text-xs font-black px-2 py-0.5 rounded-full bg-white border ${columnConfig.countBorder}`}>
+        <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-white border-2 border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] text-[#1a2e1f]">
           {tasks.length}
         </span>
       </div>
@@ -303,12 +320,17 @@ function KanbanColumn({
       <div className="space-y-3 flex-1 flex flex-col">
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.length === 0 ? (
-            <div className={`flex-1 flex items-center justify-center p-8 rounded-2xl border-2 border-dashed transition-all text-xs text-center ${
+            <div className={`flex-1 flex flex-col items-center justify-center p-8 rounded-[22px] border-[2.5px] border-dashed transition-all text-center space-y-2 ${
               isHighlighted
-                ? 'border-primary bg-primary/10 text-primary font-black animate-pulse'
-                : 'border-border/60 text-muted-foreground'
+                ? 'border-[#1a2e1f] bg-[#ffeed0] text-[#1a2e1f] font-black animate-pulse'
+                : 'border-[#1a2e1f]/35 bg-white/40 text-[#1a2e1f]/70'
             }`}>
-              {isHighlighted ? columnConfig.dropPrompt : columnConfig.emptyText}
+              <div className={`w-10 h-10 rounded-full border-2 border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] flex items-center justify-center mb-1 ${columnConfig.emptyBadgeColor}`}>
+                <EmptyIcon className="w-5 h-5 stroke-[2.5]" />
+              </div>
+              <p className="text-xs font-bold leading-relaxed max-w-[200px]">
+                {isHighlighted ? columnConfig.dropPrompt : columnConfig.emptyText}
+              </p>
             </div>
           ) : (
             <>
@@ -322,7 +344,7 @@ function KanbanColumn({
               ))}
 
               {isHighlighted && (
-                <div className="border-2 border-dashed border-primary bg-primary/10 text-primary rounded-2xl p-4 flex items-center justify-center text-xs font-black animate-pulse mt-auto">
+                <div className="border-[2.5px] border-dashed border-[#1a2e1f] bg-[#ffeed0] text-[#1a2e1f] rounded-[22px] p-4 flex items-center justify-center text-xs font-black animate-pulse mt-auto shadow-[3px_3px_0px_#1a2e1f]">
                   {columnConfig.dropPrompt}
                 </div>
               )}
@@ -353,7 +375,7 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // 5px threshold to separate clicks from drag operations
+        distance: 5, // 5px threshold to allow clean clicks on buttons
       },
     }),
     useSensor(KeyboardSensor, {
@@ -528,38 +550,39 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      {/* Header */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border-2 border-border shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 font-['Alegreya_Sans',sans-serif]">
+      {/* Header Container with Neo-Brutalist Sticker Style */}
+      <div className="bg-[#fff9ed] p-6 sm:p-8 rounded-[28px] border-[3.5px] border-[#1a2e1f] shadow-[6px_6px_0px_#1a2e1f]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black bg-primary/10 text-primary border border-primary/20 mb-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-black bg-[#ffc93c] text-[#1a2e1f] border-[2px] border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] mb-3">
               <Kanban className="w-3.5 h-3.5" />
               <span>Papan Kanban Personal</span>
             </div>
-            <h1 className="text-3xl font-black text-foreground tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-['Fraunces',serif] font-black text-[#1a2e1f] tracking-tight leading-tight">
               Tasks & Board
             </h1>
-            <p className="text-muted-foreground text-sm mt-1 max-w-xl">
+            <p className="text-[#1a2e1f]/75 font-medium text-sm sm:text-base mt-1.5 max-w-xl leading-relaxed">
               Alur manajemen tugas individual. Geser dan letakkan (drag & drop) kartu task antar kolom Todo, In Progress, dan Done, atau atur ulang urutan kartu.
             </p>
           </div>
 
+          {/* Pill CTA button matching Landing Page */}
           <button
             type="button"
             onClick={() => setIsAdding(!isAdding)}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-primary text-primary-foreground font-black text-xs hover:bg-primary-hover transition-all shadow-xs active:scale-95 self-start md:self-auto"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#ff7a2f] text-white font-black text-sm border-[3px] border-[#1a2e1f] shadow-[4px_4px_0px_#1a2e1f] hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#1a2e1f] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#1a2e1f] transition-all cursor-pointer self-start md:self-auto"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Task Baru</span>
+            <span>+ Task Baru</span>
           </button>
         </div>
 
-        {/* Add Task Modal / Form Drawer */}
+        {/* Add Task Drawer Form */}
         {isAdding && (
           <form
             onSubmit={handleCreate}
-            className="mt-6 p-4 rounded-2xl bg-muted/40 border-2 border-border space-y-3 animate-in fade-in duration-200"
+            className="mt-6 p-5 rounded-[22px] bg-[#ffeed0] border-[3px] border-[#1a2e1f] shadow-[4px_4px_0px_#1a2e1f] space-y-3.5 animate-in fade-in duration-200"
           >
             <div className="flex flex-col sm:flex-row gap-3">
               <input
@@ -567,13 +590,13 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Judul task baru..."
-                className="flex-1 px-4 py-2.5 bg-white border-2 border-border rounded-xl text-sm font-medium focus:outline-none focus:border-primary"
+                className="flex-1 px-4 py-2.5 bg-white border-[2.5px] border-[#1a2e1f] rounded-xl text-sm font-bold text-[#1a2e1f] focus:outline-none placeholder:text-[#1a2e1f]/40"
                 autoFocus
               />
               <select
                 value={newPriority}
                 onChange={(e) => setNewPriority(e.target.value as any)}
-                className="px-3 py-2.5 bg-white border-2 border-border rounded-xl text-xs font-black focus:outline-none focus:border-primary"
+                className="px-3.5 py-2.5 bg-white border-[2.5px] border-[#1a2e1f] rounded-xl text-xs font-black text-[#1a2e1f] focus:outline-none"
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -581,18 +604,18 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
                 <option value="URGENT">Urgent</option>
               </select>
             </div>
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center justify-end gap-2.5 pt-1">
               <button
                 type="button"
                 onClick={() => setIsAdding(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:bg-muted"
+                className="px-4 py-2 rounded-full text-xs font-bold border-2 border-[#1a2e1f] bg-white text-[#1a2e1f] hover:bg-gray-100 transition-colors"
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={!newTitle.trim()}
-                className="px-4 py-2 rounded-xl text-xs font-black bg-primary text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
+                className="px-5 py-2 rounded-full text-xs font-black border-[2.5px] border-[#1a2e1f] bg-[#1f4d2b] text-[#fbf3e0] shadow-[3px_3px_0px_#1a2e1f] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#1a2e1f] active:translate-y-0.5 active:shadow-[1px_1px_0px_#1a2e1f] disabled:opacity-50 transition-all"
               >
                 Simpan Task
               </button>
@@ -601,29 +624,29 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
         )}
 
         {/* Filter and Search Bar */}
-        <div className="mt-6 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="mt-6 pt-5 border-t-2 border-[#1a2e1f]/15 flex flex-col sm:flex-row items-center justify-between gap-3.5">
           <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#1a2e1f]/50 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari task..."
-              className="w-full pl-9 pr-4 py-2 bg-muted/40 border-2 border-border rounded-xl text-xs font-medium focus:outline-none focus:border-primary"
+              className="w-full pl-9 pr-4 py-2 bg-white border-[2.5px] border-[#1a2e1f] shadow-[3px_3px_0px_#1a2e1f] rounded-full text-xs font-bold text-[#1a2e1f] placeholder:text-[#1a2e1f]/40 focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center gap-1.5 self-start sm:self-auto text-xs font-bold">
-            <span className="text-muted-foreground mr-1 text-[11px]">Prioritas:</span>
+          <div className="flex items-center gap-1.5 self-start sm:self-auto text-xs font-black flex-wrap">
+            <span className="text-[#1a2e1f]/70 mr-1 text-[11px] uppercase tracking-wider">Prioritas:</span>
             {['ALL', 'URGENT', 'HIGH', 'MEDIUM', 'LOW'].map((p) => (
               <button
                 key={p}
                 type="button"
                 onClick={() => setPriorityFilter(p)}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+                className={`px-3 py-1 rounded-full text-xs font-black transition-all border-[2px] border-[#1a2e1f] ${
                   priorityFilter === p
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:text-foreground'
+                    ? 'bg-[#ffc93c] text-[#1a2e1f] shadow-[3px_3px_0px_#1a2e1f] -translate-y-0.5'
+                    : 'bg-white text-[#1a2e1f]/70 hover:bg-[#fff9ed] hover:text-[#1a2e1f] hover:shadow-[2px_2px_0px_#1a2e1f]'
                 }`}
               >
                 {p}

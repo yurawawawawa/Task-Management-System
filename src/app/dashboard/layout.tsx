@@ -21,18 +21,26 @@ export default async function DashboardLayout({
   const profile = await db.orm.public.Profile.where({ id: authUser.id }).first();
 
   return (
-    <div className="min-h-screen bg-[#faf9f5] flex flex-col md:flex-row font-sans relative">
+    <div
+      className="min-h-screen bg-[#fbf3e0] flex flex-col md:flex-row font-['Alegreya_Sans',sans-serif] relative text-[#1a2e1f]"
+      style={{
+        backgroundImage: 'radial-gradient(rgba(26, 46, 31, 0.12) 2px, transparent 2px)',
+        backgroundSize: '22px 22px',
+      }}
+    >
       {/* Desktop Sidebar Navigation */}
-      <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r-2 border-border bg-white sticky top-0 h-screen z-30">
+      <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r-[3.5px] border-[#1a2e1f] bg-[#1f4d2b] text-[#fbf3e0] sticky top-0 h-screen z-30 shadow-[4px_0_0px_#1a2e1f]">
         {/* Brand header */}
-        <div className="p-5 border-b border-border/80 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            <TreklyLogo className="w-8 h-8 text-[#1a2e1f] group-hover:scale-105 transition-transform" />
+        <div className="p-5 border-b-[3px] border-[#163820] bg-[#173e21] flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-2xl bg-[#ffc93c] border-2 border-[#1a2e1f] shadow-[2px_2px_0px_#1a2e1f] flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+              <TreklyLogo className="w-6 h-6 text-[#1a2e1f]" />
+            </div>
             <div>
-              <span className="font-extrabold text-base tracking-tight text-foreground block leading-tight">
+              <span className="font-['Fraunces',serif] font-black text-2xl tracking-tight text-[#fbf3e0] block leading-none">
                 Trekly
               </span>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              <span className="text-[10px] font-black text-[#ffc93c] uppercase tracking-wider block mt-1">
                 Personal Productivity
               </span>
             </div>
@@ -45,16 +53,16 @@ export default async function DashboardLayout({
         </div>
 
         {/* Profile Card & Logout in Sidebar Footer */}
-        <div className="p-4 border-t border-border/80 bg-muted/20 flex items-center justify-between">
+        <div className="p-4 border-t-[3px] border-[#163820] bg-[#173e21] flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-gray-800 to-black text-primary-foreground flex items-center justify-center text-xs font-black shadow-sm ring-2 ring-white shrink-0">
+            <div className="w-9 h-9 rounded-full bg-[#ffc93c] text-[#1a2e1f] border-2 border-[#1a2e1f] flex items-center justify-center text-xs font-black shadow-[2px_2px_0px_#1a2e1f] shrink-0">
               {profile?.name?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-extrabold text-foreground truncate leading-tight">
+              <p className="text-xs font-black text-[#fbf3e0] truncate leading-tight">
                 {profile?.name || 'Trekly User'}
               </p>
-              <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
+              <p className="text-[11px] text-[#fbf3e0]/70 truncate leading-tight mt-0.5">
                 {authUser.email}
               </p>
             </div>
@@ -66,17 +74,21 @@ export default async function DashboardLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         {/* Mobile Top Header */}
-        <header className="md:hidden sticky top-0 z-40 w-full backdrop-blur-md bg-white/90 border-b border-border px-4 h-14 flex items-center justify-between">
+        <header className="md:hidden sticky top-0 z-40 w-full bg-[#1f4d2b] border-b-[3px] border-[#1a2e1f] px-4 h-16 flex items-center justify-between text-[#fbf3e0] shadow-[0_3px_0px_#1a2e1f]">
           <div className="flex items-center gap-2">
             <MobileNav />
-            <Link href="/dashboard" className="flex items-center gap-2 font-bold">
-              <TreklyLogo className="w-7 h-7 text-[#1a2e1f]" />
-              <span className="font-extrabold tracking-tight text-foreground">Trekly</span>
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-[#ffc93c] border-2 border-[#1a2e1f] flex items-center justify-center">
+                <TreklyLogo className="w-5 h-5 text-[#1a2e1f]" />
+              </div>
+              <span className="font-['Fraunces',serif] font-black text-xl tracking-tight text-[#fbf3e0]">
+                Trekly
+              </span>
             </Link>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-gray-800 to-black text-primary-foreground flex items-center justify-center text-[10px] font-bold">
+            <div className="w-8 h-8 rounded-full bg-[#ffc93c] text-[#1a2e1f] border-2 border-[#1a2e1f] flex items-center justify-center text-[11px] font-black shadow-[1.5px_1.5px_0px_#1a2e1f]">
               {profile?.name?.[0]?.toUpperCase() || 'U'}
             </div>
             <LogoutButton />
