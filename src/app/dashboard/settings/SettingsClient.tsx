@@ -322,27 +322,6 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                   </div>
                 </div>
               )}
-
-              {/* Status Banner */}
-              <div
-                className={`p-3.5 rounded-2xl flex items-center justify-between text-xs ${
-                  isRetro
-                    ? 'bg-[#ffeed0] border-2 border-[#1a2e1f] text-[#1a2e1f]'
-                    : 'bg-slate-50 border border-slate-200 text-slate-700'
-                }`}
-              >
-                <span className="font-bold opacity-80">Preferensi Tersimpan:</span>
-                <span className="font-black inline-flex items-center gap-2">
-                  <span>{themeStyle === 'retro' ? 'Retro Playful' : 'Minimalist Clean'}</span>
-                  {themeStyle === 'minimal' && (
-                    <>
-                      <span>&bull;</span>
-                      <span>{accentColor === 'orange' ? 'Trekly Orange' : 'Forest Green'}</span>
-                    </>
-                  )}
-                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                </span>
-              </div>
             </div>
           </div>
         )}
