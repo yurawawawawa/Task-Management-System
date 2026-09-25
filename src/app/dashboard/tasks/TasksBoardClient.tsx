@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   Kanban,
   Plus,
@@ -41,35 +41,51 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
   const [isAdding, setIsAdding] = useState(false);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<'TODO' | 'IN_PROGRESS' | 'DONE' | null>(null);
+  const draggedTaskIdRef = useRef<string | null>(null);
 
-  const handleDragStart = (e: React.DragEvent, taskId: string) => {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, taskId: string) => {
+    draggedTaskIdRef.current = taskId;
     e.dataTransfer.setData('text/plain', taskId);
     e.dataTransfer.effectAllowed = 'move';
-    setDraggedTaskId(taskId);
+    // Delay state change to avoid layout shift that cancels Chrome/Edge drag session
+    setTimeout(() => {
+      setDraggedTaskId(taskId);
+    }, 0);
   };
 
   const handleDragEnd = () => {
+    draggedTaskIdRef.current = null;
     setDraggedTaskId(null);
     setDragOverColumn(null);
   };
 
   const handleDragOver = (e: React.DragEvent, column: 'TODO' | 'IN_PROGRESS' | 'DONE') => {
     e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
     if (dragOverColumn !== column) {
       setDragOverColumn(column);
     }
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setDragOverColumn(null);
+  const handleDragLeave = (e: React.DragEvent, column: 'TODO' | 'IN_PROGRESS' | 'DONE') => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+      if (dragOverColumn === column) {
+        setDragOverColumn(null);
+      }
     }
   };
 
   const handleDrop = async (e: React.DragEvent, targetStatus: 'TODO' | 'IN_PROGRESS' | 'DONE') => {
     e.preventDefault();
-    const taskId = e.dataTransfer.getData('text/plain') || draggedTaskId;
+    e.stopPropagation();
+    const taskId = draggedTaskIdRef.current || e.dataTransfer.getData('text/plain') || draggedTaskId;
+    draggedTaskIdRef.current = null;
     setDraggedTaskId(null);
     setDragOverColumn(null);
 
@@ -128,7 +144,7 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
     }
   };
 
-  const renderTaskCard = (task: Task) => {
+  const renderTaskCard = (task: Task, columnStatus: 'TODO' | 'IN_PROGRESS' | 'DONE') => {
     const priorityColor = {
       LOW: 'bg-gray-100 text-gray-700 border-gray-200',
       MEDIUM: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -141,12 +157,14 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
     return (
       <div
         key={task.id}
-        draggable
+        draggable={true}
         onDragStart={(e) => handleDragStart(e, task.id)}
         onDragEnd={handleDragEnd}
+        onDragOver={(e) => handleDragOver(e, columnStatus)}
+        onDrop={(e) => handleDrop(e, columnStatus)}
         className={`bg-white p-4 rounded-2xl border-2 transition-all space-y-3 group cursor-grab active:cursor-grabbing select-none ${
           isDragging
-            ? 'opacity-40 scale-[0.98] border-dashed border-primary shadow-inner bg-primary/5'
+            ? 'opacity-40 border-dashed border-primary shadow-sm bg-primary/5'
             : 'border-border shadow-2xs hover:border-primary/50 hover:shadow-xs'
         }`}
       >
@@ -164,11 +182,13 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
           </div>
           <button
             type="button"
+            draggable={false}
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               handleDelete(task.id);
             }}
-            className="text-muted-foreground/60 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+            className="text-muted-foreground/60 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 p-1 rounded-md"
             title="Hapus task"
           >
             <Trash2 className="w-4 h-4" />
@@ -184,11 +204,13 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
           {task.status !== 'TODO' && (
             <button
               type="button"
+              draggable={false}
+              onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 handleMoveStatus(task.id, task.status === 'DONE' ? 'IN_PROGRESS' : 'TODO');
               }}
-              className="inline-flex items-center gap-1 font-bold hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-1 font-bold hover:text-foreground transition-colors px-1 py-0.5 rounded"
               title="Kembalikan ke status sebelumnya"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -201,11 +223,13 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
           {task.status !== 'DONE' ? (
             <button
               type="button"
+              draggable={false}
+              onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 handleMoveStatus(task.id, task.status === 'TODO' ? 'IN_PROGRESS' : 'DONE');
               }}
-              className="inline-flex items-center gap-1 font-black text-primary hover:text-primary-hover ml-auto transition-colors"
+              className="inline-flex items-center gap-1 font-black text-primary hover:text-primary-hover ml-auto transition-colors px-1 py-0.5 rounded"
             >
               <span>{task.status === 'TODO' ? 'Mulai Kerja' : 'Selesaikan'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -332,11 +356,11 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
         {/* Column 1: TODO */}
         <div
           onDragOver={(e) => handleDragOver(e, 'TODO')}
-          onDragLeave={handleDragLeave}
+          onDragLeave={(e) => handleDragLeave(e, 'TODO')}
           onDrop={(e) => handleDrop(e, 'TODO')}
-          className={`p-5 rounded-3xl border-2 transition-all space-y-4 ${
+          className={`p-5 rounded-3xl border-2 transition-all space-y-4 flex flex-col ${
             dragOverColumn === 'TODO'
-              ? 'bg-primary/10 border-primary ring-2 ring-primary/20 scale-[1.01]'
+              ? 'bg-primary/5 border-primary ring-2 ring-primary/20'
               : 'bg-muted/30 border-border'
           }`}
         >
@@ -352,19 +376,20 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
             </span>
           </div>
 
-          <div className="space-y-3 min-h-[300px]">
-            {todoTasks.length === 0 && dragOverColumn !== 'TODO' ? (
-              <p className="text-xs text-muted-foreground text-center py-12">
-                Tidak ada task di antrean To Do
-              </p>
-            ) : (
-              todoTasks.map(renderTaskCard)
-            )}
-
-            {dragOverColumn === 'TODO' && draggedTaskId && (
-              <div className="border-2 border-dashed border-primary/50 bg-primary/10 rounded-2xl p-3 flex items-center justify-center text-xs font-bold text-primary animate-pulse">
-                Lepaskan task di To Do
+          <div className="space-y-3 min-h-[350px] flex-1 flex flex-col">
+            {todoTasks.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-8 rounded-2xl border-2 border-dashed border-border/50 text-xs text-muted-foreground text-center">
+                {dragOverColumn === 'TODO' ? 'Lepaskan task di sini' : 'Tidak ada task di antrean To Do'}
               </div>
+            ) : (
+              <>
+                {todoTasks.map((t) => renderTaskCard(t, 'TODO'))}
+                {dragOverColumn === 'TODO' && draggedTaskId && (
+                  <div className="border-2 border-dashed border-primary bg-primary/10 text-primary rounded-2xl p-4 flex items-center justify-center text-xs font-black animate-pulse">
+                    Lepaskan task di To Do
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -372,11 +397,11 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
         {/* Column 2: IN PROGRESS */}
         <div
           onDragOver={(e) => handleDragOver(e, 'IN_PROGRESS')}
-          onDragLeave={handleDragLeave}
+          onDragLeave={(e) => handleDragLeave(e, 'IN_PROGRESS')}
           onDrop={(e) => handleDrop(e, 'IN_PROGRESS')}
-          className={`p-5 rounded-3xl border-2 transition-all space-y-4 ${
+          className={`p-5 rounded-3xl border-2 transition-all space-y-4 flex flex-col ${
             dragOverColumn === 'IN_PROGRESS'
-              ? 'bg-blue-100/60 border-blue-500 ring-2 ring-blue-300/40 scale-[1.01]'
+              ? 'bg-blue-100/50 border-blue-500 ring-2 ring-blue-300/40'
               : 'bg-blue-50/40 border-blue-200/80'
           }`}
         >
@@ -392,19 +417,20 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
             </span>
           </div>
 
-          <div className="space-y-3 min-h-[300px]">
-            {inProgressTasks.length === 0 && dragOverColumn !== 'IN_PROGRESS' ? (
-              <p className="text-xs text-muted-foreground text-center py-12">
-                Belum ada task yang sedang dikerjakan
-              </p>
-            ) : (
-              inProgressTasks.map(renderTaskCard)
-            )}
-
-            {dragOverColumn === 'IN_PROGRESS' && draggedTaskId && (
-              <div className="border-2 border-dashed border-blue-400 bg-blue-100/80 rounded-2xl p-3 flex items-center justify-center text-xs font-bold text-blue-700 animate-pulse">
-                Lepaskan task di In Progress
+          <div className="space-y-3 min-h-[350px] flex-1 flex flex-col">
+            {inProgressTasks.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-8 rounded-2xl border-2 border-dashed border-blue-200 text-xs text-muted-foreground text-center">
+                {dragOverColumn === 'IN_PROGRESS' ? 'Lepaskan task di sini' : 'Belum ada task yang sedang dikerjakan'}
               </div>
+            ) : (
+              <>
+                {inProgressTasks.map((t) => renderTaskCard(t, 'IN_PROGRESS'))}
+                {dragOverColumn === 'IN_PROGRESS' && draggedTaskId && (
+                  <div className="border-2 border-dashed border-blue-400 bg-blue-100/80 text-blue-700 rounded-2xl p-4 flex items-center justify-center text-xs font-black animate-pulse">
+                    Lepaskan task di In Progress
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -412,11 +438,11 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
         {/* Column 3: DONE */}
         <div
           onDragOver={(e) => handleDragOver(e, 'DONE')}
-          onDragLeave={handleDragLeave}
+          onDragLeave={(e) => handleDragLeave(e, 'DONE')}
           onDrop={(e) => handleDrop(e, 'DONE')}
-          className={`p-5 rounded-3xl border-2 transition-all space-y-4 ${
+          className={`p-5 rounded-3xl border-2 transition-all space-y-4 flex flex-col ${
             dragOverColumn === 'DONE'
-              ? 'bg-emerald-100/60 border-emerald-500 ring-2 ring-emerald-300/40 scale-[1.01]'
+              ? 'bg-emerald-100/50 border-emerald-500 ring-2 ring-emerald-300/40'
               : 'bg-emerald-50/40 border-emerald-200/80'
           }`}
         >
@@ -432,19 +458,20 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
             </span>
           </div>
 
-          <div className="space-y-3 min-h-[300px]">
-            {doneTasks.length === 0 && dragOverColumn !== 'DONE' ? (
-              <p className="text-xs text-muted-foreground text-center py-12">
-                Selesaikan task untuk mencatat progres di sini
-              </p>
-            ) : (
-              doneTasks.map(renderTaskCard)
-            )}
-
-            {dragOverColumn === 'DONE' && draggedTaskId && (
-              <div className="border-2 border-dashed border-emerald-400 bg-emerald-100/80 rounded-2xl p-3 flex items-center justify-center text-xs font-bold text-emerald-700 animate-pulse">
-                Lepaskan task di Done
+          <div className="space-y-3 min-h-[350px] flex-1 flex flex-col">
+            {doneTasks.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-8 rounded-2xl border-2 border-dashed border-emerald-200 text-xs text-muted-foreground text-center">
+                {dragOverColumn === 'DONE' ? 'Lepaskan task di sini' : 'Selesaikan task untuk mencatat progres di sini'}
               </div>
+            ) : (
+              <>
+                {doneTasks.map((t) => renderTaskCard(t, 'DONE'))}
+                {dragOverColumn === 'DONE' && draggedTaskId && (
+                  <div className="border-2 border-dashed border-emerald-400 bg-emerald-100/80 text-emerald-700 rounded-2xl p-4 flex items-center justify-center text-xs font-black animate-pulse">
+                    Lepaskan task di Done
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
