@@ -26,13 +26,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    // 3. Fetch user profile from database
-    const profile = await db.orm.public.Profile
+    // 3. Fetch user profile from database, or auto-create if missing
+    let profile = await db.orm.public.Profile
       .where({ id: authData.user.id })
       .first();
 
     if (!profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
+      try {
+        profile = await db.orm.public.Profile.create({
+          id: authData.user.id,
+          email: authData.user.email!,
+          name: authData.user.user_metadata?.name || authData.user.email?.split('@')[0] || 'User',
+        });
+      } catch (e) {
+        console.error('Failed to auto-create missing profile during login:', e);
+      }
     }
 
     return NextResponse.json({ 

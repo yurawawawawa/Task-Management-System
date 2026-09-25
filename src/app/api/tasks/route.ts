@@ -13,6 +13,8 @@ export async function GET(request: Request) {
     const status = searchParams.get('status') as any;
     const priority = searchParams.get('priority') as any;
     const projectId = searchParams.get('projectId');
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
 
     const filters: any = { userId: user.id };
     
@@ -23,9 +25,26 @@ export async function GET(request: Request) {
     const tasks = await db.orm.public.Task
       .where(filters)
       .orderBy(t => t.createdAt.desc())
+      .limit(limit)
+      .offset((page - 1) * limit)
       .all();
 
-    return NextResponse.json({ tasks });
+    const { totalItems } = await db.orm.public.Task
+      .where(filters)
+      .aggregate((a) => ({ totalItems: a.count() }));
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return NextResponse.json({
+      meta: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+      data: tasks
+    });
   } catch (error: any) {
     console.error('Fetch tasks error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -46,7 +65,7 @@ export async function POST(request: Request) {
 
     const { title, description, projectId, status, priority, dueDate } = result.data;
 
-    // Jika di-assign ke sebuah project, pastikan project tersebut milik user ini!
+
     if (projectId) {
       const project = await db.orm.public.Project.where({ id: projectId }).first();
       if (!project) return NextResponse.json({ error: 'Assigned project not found' }, { status: 404 });
