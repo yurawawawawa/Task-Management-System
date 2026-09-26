@@ -56,16 +56,35 @@ export default function SignupPage() {
   }, [accountExistsPopup, countdown, email, router]);
 
   // Email & Password Signup
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+
+    const formData = new FormData(e.currentTarget);
+    const formName = ((formData.get('name') as string) || name).trim();
+    const formEmail = ((formData.get('email') as string) || email).trim();
+    const formPassword = (formData.get('password') as string) || password;
+
+    if (!formName) {
+      setError('Silakan masukkan nama lengkap Anda.');
+      return;
+    }
+    if (!formEmail) {
+      setError('Silakan masukkan alamat email Anda.');
+      return;
+    }
+    if (!formPassword || formPassword.length < 6) {
+      setError('Password minimal harus 6 karakter.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name: formName, email: formEmail, password: formPassword }),
       });
 
       const data = await res.json();
@@ -251,7 +270,9 @@ export default function SignupPage() {
           </label>
           <input
             id="name"
+            name="name"
             type="text"
+            autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -266,7 +287,9 @@ export default function SignupPage() {
           </label>
           <input
             id="email"
+            name="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -281,7 +304,9 @@ export default function SignupPage() {
           </label>
           <input
             id="password"
+            name="password"
             type="password"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -293,7 +318,7 @@ export default function SignupPage() {
 
         <button
           type="submit"
-          disabled={loading || googleLoading || !name || !email || !password}
+          disabled={loading || googleLoading}
           className="pill w-full mt-2 py-3 bg-[#ffc93c] text-[#1a2e1f] font-black text-sm md:text-base border-[2.5px] border-[#1a2e1f] hover:bg-[#ffd666] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer shadow-[3px_3px_0_#1a2e1f]"
         >
           {loading ? (

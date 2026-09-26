@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -37,8 +37,9 @@ function LoginForm() {
   const emailParam = searchParams.get('email') || '';
   const existingParam = searchParams.get('existing') === 'true';
 
+  const passwordParam = searchParams.get('password') || '';
   const [email, setEmail] = useState(emailParam);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(passwordParam);
   const [error, setError] = useState(
     oauthError === 'auth_callback_failed'
       ? 'Gagal masuk dengan Google. Silakan coba kembali.'
@@ -47,17 +48,47 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // Email & Password Login
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Sinkronkan email jika emailParam berubah di URL
+  useEffect(() => {
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [emailParam]);
+
+  // Jika password sempat terbawa di query parameter karena submit native, masukkan ke state dan bersihkan URL
+  useEffect(() => {
+    if (passwordParam) {
+      setPassword(passwordParam);
+      const cleanUrl = window.location.pathname + (emailParam ? `?email=${encodeURIComponent(emailParam)}` : '');
+      window.history.replaceState({}, '', cleanUrl);
+    }
+  }, [passwordParam, emailParam]);
+
+  // Fungsi proses submit login
+  const submitCredentials = async () => {
+    if (loading || googleLoading) return;
     setError('');
+
+    const formEmail = email.trim();
+    const formPassword = password;
+
+    if (!formEmail) {
+      setError('Silakan masukkan email Anda.');
+      return;
+    }
+
+    if (!formPassword) {
+      setError('Silakan masukkan password Anda.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: formEmail, password: formPassword }),
       });
 
       const data = await res.json();
@@ -66,12 +97,17 @@ function LoginForm() {
         throw new Error(data.error || 'Email atau password salah');
       }
 
-      router.push('/dashboard');
-      router.refresh();
+      // Gunakan window.location.href untuk hard redirect ke /dashboard dengan cookie sesi baru
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
     }
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitCredentials();
   };
 
   // Google OAuth Login
@@ -160,16 +196,24 @@ function LoginForm() {
       </div>
 
       {/* Form Email & Password */}
-      <form onSubmit={handleLogin} className="space-y-3.5">
+      <form action="#" method="POST" onSubmit={handleLogin} className="space-y-3.5">
         <div>
           <label htmlFor="email" className="block text-xs font-extrabold text-[#1a2e1f] mb-1">
             Email
           </label>
           <input
             id="email"
+            name="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                submitCredentials();
+              }
+            }}
             required
             className="w-full px-3.5 py-2.5 bg-white border-2 border-[#1a2e1f] rounded-xl text-sm font-medium text-[#1a2e1f] placeholder:text-[#1a2e1f]/40 focus:outline-none focus:ring-2 focus:ring-[#ffc93c] transition-all"
             placeholder="nama@email.com"
@@ -184,9 +228,17 @@ function LoginForm() {
           </div>
           <input
             id="password"
+            name="password"
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                submitCredentials();
+              }
+            }}
             required
             className="w-full px-3.5 py-2.5 bg-white border-2 border-[#1a2e1f] rounded-xl text-sm font-medium text-[#1a2e1f] placeholder:text-[#1a2e1f]/40 focus:outline-none focus:ring-2 focus:ring-[#ffc93c] transition-all"
             placeholder="••••••••"
@@ -194,8 +246,9 @@ function LoginForm() {
         </div>
 
         <button
-          type="submit"
-          disabled={loading || googleLoading || !email || !password}
+          type="button"
+          onClick={submitCredentials}
+          disabled={loading || googleLoading}
           className="pill w-full mt-2 py-3 bg-[#ffc93c] text-[#1a2e1f] font-black text-sm md:text-base border-[2.5px] border-[#1a2e1f] hover:bg-[#ffd666] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer shadow-[3px_3px_0_#1a2e1f]"
         >
           {loading ? (
