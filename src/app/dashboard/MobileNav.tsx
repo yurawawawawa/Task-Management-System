@@ -59,33 +59,30 @@ export default function MobileNav() {
       </button>
 
       {/* Backdrop + Drawer */}
-      <div
-        className={`fixed inset-0 z-50 transition-opacity duration-300 motion-reduce:transition-none ${
-          isOpen
-            ? 'opacity-100 pointer-events-auto'
-            : 'opacity-0 pointer-events-none'
-        }`}
-        aria-hidden={!isOpen}
-      >
-        {/* Backdrop */}
+      {isOpen && (
         <div
-          className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
-          onClick={close}
-          aria-label="Close menu"
-        />
-
-        {/* Drawer panel */}
-        <nav
-          id="mobile-drawer"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Navigation menu"
-          className={`absolute top-0 left-0 h-full w-[280px] max-w-[85vw] flex flex-col transition-transform duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
-            isRetro
-              ? 'bg-[#1f4d2b] text-[#fbf3e0] border-r-[3.5px] border-[#1a2e1f] shadow-2xl'
-              : 'bg-white text-slate-800 border-r border-slate-200 shadow-2xl'
-          } ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className="fixed inset-0 z-50 transition-opacity duration-300 motion-reduce:transition-none"
+          aria-hidden={!isOpen}
         >
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+            onClick={close}
+            aria-label="Close menu"
+          />
+
+          {/* Drawer panel */}
+          <nav
+            id="mobile-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
+            className={`absolute top-0 left-0 h-full w-[280px] max-w-[85vw] flex flex-col transition-transform duration-300 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+              isRetro
+                ? 'bg-[#1f4d2b] text-[#fbf3e0] border-r-[3.5px] border-[#1a2e1f] shadow-2xl'
+                : 'bg-white text-slate-800 border-r border-slate-200 shadow-2xl'
+            } translate-x-0`}
+          >
           {/* Drawer header */}
           <div
             className={`flex items-center justify-between px-5 h-16 shrink-0 ${
@@ -258,6 +255,7 @@ export default function MobileNav() {
           </div>
         </nav>
       </div>
+      )}
     </div>
   );
 }

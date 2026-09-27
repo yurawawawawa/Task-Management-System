@@ -110,9 +110,9 @@ export default function LandingPage({ user }: LandingPageProps) {
       const rand = Math.random();
       const level = rand > 0.82 ? 4 : rand > 0.62 ? 3 : rand > 0.4 ? 2 : rand > 0.2 ? 1 : 0;
       const count = level === 4 ? Math.floor(Math.random() * 3) + 7 :
-                    level === 3 ? Math.floor(Math.random() * 2) + 5 :
-                    level === 2 ? Math.floor(Math.random() * 2) + 3 :
-                    level === 1 ? Math.floor(Math.random() * 2) + 1 : 0;
+        level === 3 ? Math.floor(Math.random() * 2) + 5 :
+          level === 2 ? Math.floor(Math.random() * 2) + 3 :
+            level === 1 ? Math.floor(Math.random() * 2) + 1 : 0;
       return { day: i + 1, count, level };
     });
     setStreakData(initialGrid);
@@ -198,29 +198,12 @@ export default function LandingPage({ user }: LandingPageProps) {
 
   return (
     <div className="landing-page-root w-full min-h-screen p-3 sm:p-6 md:p-10 text-[#1a2e1f]">
-      {/* OUTER STICKER FRAME — Hero 1 */}
+      {/* OUTER STICKER FRAME */}
       <div
         id="top"
         className="sticker-frame w-full max-w-7xl mx-auto rounded-[36px] overflow-hidden"
-        style={{
-          backgroundImage: 'url(/background-landing-page.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center top',
-          backgroundRepeat: 'no-repeat',
-          position: 'relative',
-        }}
+        style={{ background: 'var(--green)' }}
       >
-        {/* Dark overlay agar teks tetap terbaca di atas gambar */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'rgba(20, 54, 28, 0.72)',
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
-        />
         {/* ========================================================
             NAVIGATION BAR
             ======================================================== */}
@@ -300,7 +283,7 @@ export default function LandingPage({ user }: LandingPageProps) {
         {/* ========================================================
             HERO SECTION (MINIMALIST & PUNCHY)
             ======================================================== */}
-        <section className="relative z-10 px-6 md:px-12 pt-8 md:pt-14 pb-0 overflow-hidden">
+        <section className="relative px-6 md:px-12 pt-8 md:pt-14 pb-0 overflow-hidden">
           {/* Curved Corner Spinning Starburst Badge */}
           <div
             className="absolute top-4 right-4 md:right-12 w-28 h-28 md:w-36 md:h-36 spin select-none pointer-events-none"
@@ -450,7 +433,7 @@ export default function LandingPage({ user }: LandingPageProps) {
         <svg
           viewBox="0 0 1200 80"
           preserveAspectRatio="none"
-          className="relative z-10 block w-full h-10 md:h-16 -mt-px"
+          className="block w-full h-10 md:h-16 -mt-px"
           aria-hidden="true"
           style={{ background: '#5fb572' }}
         >
@@ -547,33 +530,30 @@ export default function LandingPage({ user }: LandingPageProps) {
                     <button
                       type="button"
                       onClick={() => setActiveTab('mvp')}
-                      className={`w-full text-left text-xs font-black px-2 py-1.5 rounded-lg border-2 transition-all ${
-                        activeTab === 'mvp'
+                      className={`w-full text-left text-xs font-black px-2 py-1.5 rounded-lg border-2 transition-all ${activeTab === 'mvp'
                           ? 'bg-[#ffc93c] border-[#1a2e1f] shadow-[2px_2px_0_#1a2e1f]'
                           : 'border-transparent text-[#1a2e1f]/80 hover:bg-white/60'
-                      }`}
+                        }`}
                     >
                       MVP
                     </button>
                     <button
                       type="button"
                       onClick={() => setActiveTab('mobile')}
-                      className={`w-full text-left text-xs font-black px-2 py-1.5 rounded-lg border-2 transition-all ${
-                        activeTab === 'mobile'
+                      className={`w-full text-left text-xs font-black px-2 py-1.5 rounded-lg border-2 transition-all ${activeTab === 'mobile'
                           ? 'bg-[#ff7eb6] border-[#1a2e1f] shadow-[2px_2px_0_#1a2e1f]'
                           : 'border-transparent text-[#1a2e1f]/80 hover:bg-white/60'
-                      }`}
+                        }`}
                     >
                       Mobile
                     </button>
                     <button
                       type="button"
                       onClick={() => setActiveTab('landing')}
-                      className={`w-full text-left text-xs font-black px-2 py-1.5 rounded-lg border-2 transition-all ${
-                        activeTab === 'landing'
+                      className={`w-full text-left text-xs font-black px-2 py-1.5 rounded-lg border-2 transition-all ${activeTab === 'landing'
                           ? 'bg-[#8fd19e] border-[#1a2e1f] shadow-[2px_2px_0_#1a2e1f]'
                           : 'border-transparent text-[#1a2e1f]/80 hover:bg-white/60'
-                      }`}
+                        }`}
                     >
                       Redesign
                     </button>
@@ -786,9 +766,8 @@ export default function LandingPage({ user }: LandingPageProps) {
                   onDragOver={(e) => handleDragOver(e, 'todo')}
                   onDragLeave={handleDragLeave}
                   onDrop={() => handleDrop('todo')}
-                  className={`kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5 ${
-                    dragOverCol === 'todo' ? 'drag-over' : ''
-                  }`}
+                  className={`kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5 ${dragOverCol === 'todo' ? 'drag-over' : ''
+                    }`}
                 >
                   <div className="text-[10px] font-black uppercase text-[#1a2e1f] flex justify-between items-center">
                     <span>RENCANA</span>
@@ -819,9 +798,8 @@ export default function LandingPage({ user }: LandingPageProps) {
                   onDragOver={(e) => handleDragOver(e, 'in_progress')}
                   onDragLeave={handleDragLeave}
                   onDrop={() => handleDrop('in_progress')}
-                  className={`kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5 ${
-                    dragOverCol === 'in_progress' ? 'drag-over' : ''
-                  }`}
+                  className={`kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5 ${dragOverCol === 'in_progress' ? 'drag-over' : ''
+                    }`}
                 >
                   <div className="text-[10px] font-black uppercase text-[#1a2e1f] flex justify-between items-center">
                     <span>JALAN</span>
@@ -852,9 +830,8 @@ export default function LandingPage({ user }: LandingPageProps) {
                   onDragOver={(e) => handleDragOver(e, 'done')}
                   onDragLeave={handleDragLeave}
                   onDrop={() => handleDrop('done')}
-                  className={`kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5 ${
-                    dragOverCol === 'done' ? 'drag-over' : ''
-                  }`}
+                  className={`kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5 ${dragOverCol === 'done' ? 'drag-over' : ''
+                    }`}
                 >
                   <div className="text-[10px] font-black uppercase text-[#1a2e1f] flex justify-between items-center">
                     <span>BERES</span>
