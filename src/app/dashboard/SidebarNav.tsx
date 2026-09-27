@@ -12,10 +12,21 @@ import {
   Sparkles,
   Snowflake,
   ArrowRight,
+  type LucideIcon,
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 
-export const DASHBOARD_NAV_ITEMS = [
+export type NavItem = {
+  href: string;
+  exact?: boolean;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+  highlight?: boolean;
+  badge?: string;
+};
+
+export const DASHBOARD_NAV_ITEMS: NavItem[] = [
   {
     href: '/dashboard',
     exact: true,
@@ -30,7 +41,6 @@ export const DASHBOARD_NAV_ITEMS = [
     description: 'Visualisasi streak & kontribusi',
     icon: Flame,
     highlight: true,
-    badge: 'Unggulan',
   },
   {
     href: '/dashboard/tasks',

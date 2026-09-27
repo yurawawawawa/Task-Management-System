@@ -468,11 +468,7 @@ export default function DashboardHomeClient({
           </div>
 
           {/* Standalone Feature Teaser: Productivity Map */}
-          <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-emerald-500/10 p-6 rounded-3xl border-2 border-border shadow-xs">
-            <div className="flex items-center gap-2 text-[#ff7a2f] font-black text-xs uppercase tracking-wider mb-2">
-              <Sparkles className="w-4 h-4" />
-              <span>Fitur Unggulan</span>
-            </div>
+          <div className="bg-white p-6 rounded-3xl border-2 border-border shadow-xs">
             <h3 className="text-lg font-black text-foreground tracking-tight">
               Productivity Map
             </h3>
@@ -482,7 +478,7 @@ export default function DashboardHomeClient({
 
             <Link
               href="/dashboard/productivity"
-              className="mt-4 inline-flex items-center justify-center gap-2 w-full py-2.5 bg-[#1a2e1f] hover:bg-[#2d6a3e] text-white font-extrabold text-xs rounded-2xl transition-colors shadow-sm"
+              className="mt-4 inline-flex items-center justify-center gap-2 w-full py-2.5 bg-[#ff7a2f] hover:bg-[#e66922] text-white font-black text-xs rounded-2xl transition-colors shadow-xs"
             >
               <Flame className="w-4 h-4 fill-white" />
               <span>Buka Visualisasi Penuh</span>
