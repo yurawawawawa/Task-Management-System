@@ -8,6 +8,14 @@
       "model": "DailyActivity",
       "namespace": "public"
     },
+    "habit_completions": {
+      "model": "HabitCompletion",
+      "namespace": "public"
+    },
+    "habits": {
+      "model": "Habit",
+      "namespace": "public"
+    },
     "profiles": {
       "model": "Profile",
       "namespace": "public"
@@ -171,6 +179,187 @@
               "table": "daily_activities"
             }
           },
+          "Habit": {
+            "fields": {
+              "category": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "frequency": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "title": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "completions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "habitId"
+                  ]
+                },
+                "to": {
+                  "model": "HabitCompletion",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Profile",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "category": {
+                  "column": "category"
+                },
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "frequency": {
+                  "column": "frequency"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "title": {
+                  "column": "title"
+                },
+                "updatedAt": {
+                  "column": "updated_at"
+                },
+                "userId": {
+                  "column": "user_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "habits"
+            }
+          },
+          "HabitCompletion": {
+            "fields": {
+              "completedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "date": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "habitId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "habit": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "habitId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Habit",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "completedAt": {
+                  "column": "completed_at"
+                },
+                "date": {
+                  "column": "date"
+                },
+                "habitId": {
+                  "column": "habit_id"
+                },
+                "id": {
+                  "column": "id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "habit_completions"
+            }
+          },
           "Profile": {
             "fields": {
               "createdAt": {
@@ -237,6 +426,21 @@
                 },
                 "to": {
                   "model": "DailyActivity",
+                  "namespace": "public"
+                }
+              },
+              "habits": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "Habit",
                   "namespace": "public"
                 }
               },
@@ -716,6 +920,16 @@
               "namespaceId": "public",
               "tableName": "daily_activities"
             },
+            "habit_completions": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "habit_completions"
+            },
+            "habits": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "habits"
+            },
             "profiles": {
               "kind": "rls",
               "namespaceId": "public",
@@ -839,6 +1053,171 @@
                   ]
                 }
               ]
+            },
+            "habit_completions": {
+              "columns": {
+                "completed_at": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "date": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "habit_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "habit_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "habit_completions"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "habits"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "habit_id",
+                    "date"
+                  ],
+                  "name": "habit_completions_habit_id_date_idx_ff43a48f",
+                  "prefix": "habit_completions_habit_id_date_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "habit_id"
+                  ],
+                  "name": "habit_completions_habit_id_idx_86c467ac",
+                  "prefix": "habit_completions_habit_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "habit_id",
+                    "date"
+                  ]
+                }
+              ]
+            },
+            "habits": {
+              "columns": {
+                "category": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "Produktivitas"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "frequency": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "DAILY"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "title": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updated_at": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "user_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "user_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "habits"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "profiles"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "user_id"
+                  ],
+                  "name": "habits_user_id_idx_6c952402",
+                  "prefix": "habits_user_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
             },
             "profiles": {
               "columns": {
@@ -1288,10 +1667,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "c0b3b169c580fb1221bac1e11e80ac11ec6cb519454a8a0fdea2a47f440f6264"
+    "storageHash": "75751bdc4b3802588313742cc7b5671dd4acf80049423a305df0a4a04a4b1892"
   },
   "execution": {
-    "executionHash": "cad9bd0a70e244b731e4dda55899ed4b60ec6aed0af979cfffeb63a19bf38d95",
+    "executionHash": "12fe9af977b1ec2203a36f67fa2470c61bd6697d63700598d584482d6b765942",
     "mutations": {
       "defaults": [
         {
@@ -1318,6 +1697,43 @@
             "column": "updated_at",
             "namespace": "public",
             "table": "daily_activities"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "habit_completions"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "habits"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updated_at",
+            "namespace": "public",
+            "table": "habits"
           }
         },
         {

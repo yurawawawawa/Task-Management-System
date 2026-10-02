@@ -24,8 +24,6 @@ export default async function DashboardPage() {
     .orderBy(p => p.createdAt.desc())
     .all();
 
-  const completedTasks = allTasks.filter(t => t.status === 'DONE');
-
   // Fetch productivity stats with freeze calculation
   const productivityStats = await getUserProductivityStats(user.id);
   const streakDays = productivityStats.currentStreak;
@@ -36,7 +34,7 @@ export default async function DashboardPage() {
   const completedRecentTasks = recentTasks.filter(t => t.status === 'DONE');
   const weeklyCompletionRate = recentTasks.length > 0 
     ? Math.round((completedRecentTasks.length / recentTasks.length) * 100) 
-    : 85;
+    : 0;
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -51,9 +49,14 @@ export default async function DashboardPage() {
           createdAt: t.createdAt,
         }))}
         streakDays={streakDays}
+        freezeCount={productivityStats.freezeCount}
         weeklyCompletionRate={weeklyCompletionRate}
-        totalWeeklyTasks={recentTasks.length || allTasks.length}
-        completedWeeklyTasks={completedRecentTasks.length || completedTasks.length}
+        totalWeeklyTasks={recentTasks.length}
+        completedWeeklyTasks={completedRecentTasks.length}
+        activities={productivityStats.activities.map((activity) => ({
+          date: activity.date,
+          count: activity.taskCount,
+        }))}
       />
 
       {/* Projects Overview section at bottom of dashboard */}

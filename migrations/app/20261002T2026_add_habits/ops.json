@@ -1,0 +1,641 @@
+[
+  {
+    "id": "table.daily_activities",
+    "label": "Create table \"daily_activities\"",
+    "summary": "Creates table \"daily_activities\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "daily_activities"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"daily_activities\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"daily_activities\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"daily_activities\"",
+        "sql": "CREATE TABLE \"public\".\"daily_activities\" (\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"date\" text NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"streak_counted\" bool DEFAULT false NOT NULL,\n  \"task_count\" int4 DEFAULT 0 NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  \"user_id\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"daily_activities\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"daily_activities\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.habit_completions",
+    "label": "Create table \"habit_completions\"",
+    "summary": "Creates table \"habit_completions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "habit_completions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"habit_completions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habit_completions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"habit_completions\"",
+        "sql": "CREATE TABLE \"public\".\"habit_completions\" (\n  \"completed_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"date\" text NOT NULL,\n  \"habit_id\" uuid NOT NULL,\n  \"id\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"habit_completions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habit_completions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.habits",
+    "label": "Create table \"habits\"",
+    "summary": "Creates table \"habits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "habits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"habits\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habits\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"habits\"",
+        "sql": "CREATE TABLE \"public\".\"habits\" (\n  \"category\" text DEFAULT 'Produktivitas' NOT NULL,\n  \"created_at\" timestamptz DEFAULT (now()) NOT NULL,\n  \"frequency\" text DEFAULT 'DAILY' NOT NULL,\n  \"id\" uuid NOT NULL,\n  \"title\" text NOT NULL,\n  \"updated_at\" timestamptz NOT NULL,\n  \"user_id\" uuid NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"habits\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habits\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.daily_activities.daily_activities_user_id_date_key",
+    "label": "Add unique constraint on \"daily_activities\" (user_id, date)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "daily_activities_user_id_date_key",
+        "table": "daily_activities"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"daily_activities_user_id_date_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "daily_activities_user_id_date_key",
+          "public",
+          "\"public\".\"daily_activities\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"daily_activities_user_id_date_key\"",
+        "sql": "ALTER TABLE \"public\".\"daily_activities\" ADD CONSTRAINT \"daily_activities_user_id_date_key\" UNIQUE (\"user_id\", \"date\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"daily_activities_user_id_date_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "daily_activities_user_id_date_key",
+          "public",
+          "\"public\".\"daily_activities\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.habit_completions.habit_completions_habit_id_date_key",
+    "label": "Add unique constraint on \"habit_completions\" (habit_id, date)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "habit_completions_habit_id_date_key",
+        "table": "habit_completions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"habit_completions_habit_id_date_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "habit_completions_habit_id_date_key",
+          "public",
+          "\"public\".\"habit_completions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"habit_completions_habit_id_date_key\"",
+        "sql": "ALTER TABLE \"public\".\"habit_completions\" ADD CONSTRAINT \"habit_completions_habit_id_date_key\" UNIQUE (\"habit_id\", \"date\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"habit_completions_habit_id_date_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "habit_completions_habit_id_date_key",
+          "public",
+          "\"public\".\"habit_completions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.daily_activities.daily_activities_user_id_date_idx_ad901aac",
+    "label": "Create index \"daily_activities_user_id_date_idx_ad901aac\" on \"daily_activities\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "daily_activities_user_id_date_idx_ad901aac",
+        "table": "daily_activities"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"daily_activities_user_id_date_idx_ad901aac\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"daily_activities_user_id_date_idx_ad901aac\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"daily_activities_user_id_date_idx_ad901aac\"",
+        "sql": "CREATE INDEX \"daily_activities_user_id_date_idx_ad901aac\" ON \"public\".\"daily_activities\" (\"user_id\", \"date\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"daily_activities_user_id_date_idx_ad901aac\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"daily_activities_user_id_date_idx_ad901aac\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.daily_activities.daily_activities_user_id_idx_6c952402",
+    "label": "Create index \"daily_activities_user_id_idx_6c952402\" on \"daily_activities\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "daily_activities_user_id_idx_6c952402",
+        "table": "daily_activities"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"daily_activities_user_id_idx_6c952402\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"daily_activities_user_id_idx_6c952402\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"daily_activities_user_id_idx_6c952402\"",
+        "sql": "CREATE INDEX \"daily_activities_user_id_idx_6c952402\" ON \"public\".\"daily_activities\" (\"user_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"daily_activities_user_id_idx_6c952402\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"daily_activities_user_id_idx_6c952402\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.habit_completions.habit_completions_habit_id_date_idx_ff43a48f",
+    "label": "Create index \"habit_completions_habit_id_date_idx_ff43a48f\" on \"habit_completions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "habit_completions_habit_id_date_idx_ff43a48f",
+        "table": "habit_completions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"habit_completions_habit_id_date_idx_ff43a48f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habit_completions_habit_id_date_idx_ff43a48f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"habit_completions_habit_id_date_idx_ff43a48f\"",
+        "sql": "CREATE INDEX \"habit_completions_habit_id_date_idx_ff43a48f\" ON \"public\".\"habit_completions\" (\"habit_id\", \"date\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"habit_completions_habit_id_date_idx_ff43a48f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habit_completions_habit_id_date_idx_ff43a48f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.habit_completions.habit_completions_habit_id_idx_86c467ac",
+    "label": "Create index \"habit_completions_habit_id_idx_86c467ac\" on \"habit_completions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "habit_completions_habit_id_idx_86c467ac",
+        "table": "habit_completions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"habit_completions_habit_id_idx_86c467ac\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habit_completions_habit_id_idx_86c467ac\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"habit_completions_habit_id_idx_86c467ac\"",
+        "sql": "CREATE INDEX \"habit_completions_habit_id_idx_86c467ac\" ON \"public\".\"habit_completions\" (\"habit_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"habit_completions_habit_id_idx_86c467ac\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habit_completions_habit_id_idx_86c467ac\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.habits.habits_user_id_idx_6c952402",
+    "label": "Create index \"habits_user_id_idx_6c952402\" on \"habits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "habits_user_id_idx_6c952402",
+        "table": "habits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"habits_user_id_idx_6c952402\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habits_user_id_idx_6c952402\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"habits_user_id_idx_6c952402\"",
+        "sql": "CREATE INDEX \"habits_user_id_idx_6c952402\" ON \"public\".\"habits\" (\"user_id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"habits_user_id_idx_6c952402\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"habits_user_id_idx_6c952402\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.daily_activities.daily_activities_user_id_fkey",
+    "label": "Add foreign key \"daily_activities_user_id_fkey\" on \"daily_activities\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "daily_activities_user_id_fkey",
+        "table": "daily_activities"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"daily_activities_user_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "daily_activities_user_id_fkey",
+          "public",
+          "\"public\".\"daily_activities\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"daily_activities_user_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"daily_activities\"\nADD CONSTRAINT \"daily_activities_user_id_fkey\"\nFOREIGN KEY (\"user_id\")\nREFERENCES \"public\".\"profiles\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"daily_activities_user_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "daily_activities_user_id_fkey",
+          "public",
+          "\"public\".\"daily_activities\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.habit_completions.habit_completions_habit_id_fkey",
+    "label": "Add foreign key \"habit_completions_habit_id_fkey\" on \"habit_completions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "habit_completions_habit_id_fkey",
+        "table": "habit_completions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"habit_completions_habit_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "habit_completions_habit_id_fkey",
+          "public",
+          "\"public\".\"habit_completions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"habit_completions_habit_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"habit_completions\"\nADD CONSTRAINT \"habit_completions_habit_id_fkey\"\nFOREIGN KEY (\"habit_id\")\nREFERENCES \"public\".\"habits\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"habit_completions_habit_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "habit_completions_habit_id_fkey",
+          "public",
+          "\"public\".\"habit_completions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.habits.habits_user_id_fkey",
+    "label": "Add foreign key \"habits_user_id_fkey\" on \"habits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "habits_user_id_fkey",
+        "table": "habits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"habits_user_id_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "habits_user_id_fkey",
+          "public",
+          "\"public\".\"habits\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"habits_user_id_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"habits\"\nADD CONSTRAINT \"habits_user_id_fkey\"\nFOREIGN KEY (\"user_id\")\nREFERENCES \"public\".\"profiles\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"habits_user_id_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "habits_user_id_fkey",
+          "public",
+          "\"public\".\"habits\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.daily_activities",
+    "label": "Enable row-level security on \"daily_activities\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "daily_activities"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"daily_activities\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "daily_activities"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"daily_activities\"",
+        "sql": "ALTER TABLE \"public\".\"daily_activities\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"daily_activities\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "daily_activities"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.habit_completions",
+    "label": "Enable row-level security on \"habit_completions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "habit_completions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"habit_completions\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "habit_completions"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"habit_completions\"",
+        "sql": "ALTER TABLE \"public\".\"habit_completions\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"habit_completions\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "habit_completions"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rowLevelSecurity.public.habits",
+    "label": "Enable row-level security on \"habits\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "rowLevelSecurity",
+        "name": "habits"
+      }
+    },
+    "precheck": [
+      {
+        "description": "check RLS is not already enabled on \"habits\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND NOT (\"c\".\"relrowsecurity\"))) AS \"result\"",
+        "params": [
+          "public",
+          "habits"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "enable row-level security on \"habits\"",
+        "sql": "ALTER TABLE \"public\".\"habits\" ENABLE ROW LEVEL SECURITY"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify row-level security is enabled on \"habits\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"c\".\"relrowsecurity\")) AS \"result\"",
+        "params": [
+          "public",
+          "habits"
+        ]
+      }
+    ]
+  }
+]

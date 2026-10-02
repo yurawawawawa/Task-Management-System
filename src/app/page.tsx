@@ -1,6 +1,8 @@
 import { getAuthUser } from '@/app/lib/supabase/server';
 import LandingPage from '@/app/components/landing/LandingPage';
 import { redirect } from 'next/navigation';
+import { db } from '@/prisma/db';
+import { getUserProductivityStats } from '@/app/lib/activity';
 
 export default async function Home({
   searchParams,
@@ -16,5 +18,12 @@ export default async function Home({
   }
 
   const user = await getAuthUser();
-  return <LandingPage user={user} />;
+  if (!user) return <LandingPage user={null} />;
+
+  const [tasks, stats] = await Promise.all([
+    db.orm.public.Task.where({ userId: user.id }).orderBy((task) => task.updatedAt.desc()).all(),
+    getUserProductivityStats(user.id),
+  ]);
+
+  return <LandingPage user={user} tasks={tasks.map((task) => ({ id: task.id, title: task.title, status: task.status, priority: task.priority }))} activities={stats.activities.map((activity) => ({ date: activity.date, count: activity.taskCount }))} currentStreak={stats.currentStreak} />;
 }

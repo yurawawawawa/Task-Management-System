@@ -7,15 +7,10 @@ import {
   Flame,
   ArrowRight,
   Clock,
-  Bell,
-  Pin,
-  Calendar,
   Sparkles,
   Users,
   ShieldCheck,
   Zap,
-  Plus,
-  X,
   Star,
   Trophy,
   Laptop,
@@ -33,7 +28,13 @@ interface LandingPageProps {
       full_name?: string;
     };
   } | null;
+  tasks?: LandingTask[];
+  activities?: LandingActivity[];
+  currentStreak?: number;
 }
+
+type LandingTask = { id: string; title: string; status: string; priority: string };
+type LandingActivity = { date: string; count: number };
 
 type KanbanCard = {
   id: string;
@@ -41,14 +42,6 @@ type KanbanCard = {
   color: string;
   column: 'todo' | 'in_progress' | 'done';
 };
-
-const initialCards: KanbanCard[] = [
-  { id: '1', title: 'Desain UI', color: '#ffc93c', column: 'todo' },
-  { id: '2', title: 'Riset Pengguna', color: '#ff7eb6', column: 'todo' },
-  { id: '3', title: 'Koding API', color: '#ff7a2f', column: 'in_progress' },
-  { id: '4', title: 'Testing E2E', color: '#bfe3f0', column: 'in_progress' },
-  { id: '5', title: 'Deploy v1.0', color: '#8fd19e', column: 'done' },
-];
 
 const streakLevels = ['#e8efe0', '#b9e0bf', '#8fd19e', '#5fb572', '#2d6a3e'];
 
@@ -89,21 +82,22 @@ function GithubIcon({ className = 'w-5 h-5' }: { className?: string }) {
   );
 }
 
-export default function LandingPage({ user }: LandingPageProps) {
+export default function LandingPage({ user, tasks = [], activities = [], currentStreak = 0 }: LandingPageProps) {
   // Kanban State
-  const [cards, setCards] = useState<KanbanCard[]>(initialCards);
-  const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
-  const [dragOverCol, setDragOverCol] = useState<'todo' | 'in_progress' | 'done' | null>(null);
-  const [newCardInput, setNewCardInput] = useState('');
-  const [showAddInput, setShowAddInput] = useState(false);
+  const [cards] = useState<KanbanCard[]>(() => tasks.slice(0, 8).map((task, index) => ({
+    id: task.id,
+    title: task.title,
+    color: ['#ffc93c', '#ff7eb6', '#ff7a2f', '#8fd19e', '#bfe3f0'][index % 5],
+    column: task.status === 'DONE' ? 'done' : task.status === 'IN_PROGRESS' ? 'in_progress' : 'todo',
+  })));
 
   // Streak Grid State (70 cells = 14 x 5)
   const [streakData, setStreakData] = useState<Array<{ day: number; count: number; level: number }>>([]);
   const [selectedStreak, setSelectedStreak] = useState<{ day: number; count: number } | null>(null);
-  const [streakCounter, setStreakCounter] = useState(14);
+  const [streakCounter] = useState(currentStreak);
 
-  // Workspace mockup active tab
-  const [activeTab, setActiveTab] = useState<'mvp' | 'mobile' | 'landing'>('mvp');
+  const completedTaskCount = tasks.filter((task) => task.status === 'DONE').length;
+  const completionRate = tasks.length ? Math.round((completedTaskCount / tasks.length) * 100) : 0;
 
   useEffect(() => {
     const hashParams = new URLSearchParams(window.location.hash.slice(1));
@@ -112,82 +106,18 @@ export default function LandingPage({ user }: LandingPageProps) {
       return;
     }
 
+    const activityMap = new Map(activities.map((activity) => [activity.date, activity.count]));
     const initialGrid = Array.from({ length: 70 }, (_, i) => {
-      const rand = Math.random();
-      const level = rand > 0.82 ? 4 : rand > 0.62 ? 3 : rand > 0.4 ? 2 : rand > 0.2 ? 1 : 0;
-      const count = level === 4 ? Math.floor(Math.random() * 3) + 7 :
-        level === 3 ? Math.floor(Math.random() * 2) + 5 :
-          level === 2 ? Math.floor(Math.random() * 2) + 3 :
-            level === 1 ? Math.floor(Math.random() * 2) + 1 : 0;
+      const date = new Date();
+      date.setDate(date.getDate() - (69 - i));
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      const count = activityMap.get(dateStr) || 0;
+      const level = count >= 6 ? 4 : count >= 4 ? 3 : count >= 2 ? 2 : count >= 1 ? 1 : 0;
       return { day: i + 1, count, level };
     });
     setStreakData(initialGrid);
-    setSelectedStreak(initialGrid[68]);
-  }, []);
-
-  // Kanban Handlers
-  const handleDragStart = (id: string) => {
-    setDraggedCardId(id);
-  };
-
-  const handleDragOver = (e: React.DragEvent, col: 'todo' | 'in_progress' | 'done') => {
-    e.preventDefault();
-    setDragOverCol(col);
-  };
-
-  const handleDragLeave = () => {
-    setDragOverCol(null);
-  };
-
-  const handleDrop = (col: 'todo' | 'in_progress' | 'done') => {
-    if (!draggedCardId) return;
-    setCards((prev) =>
-      prev.map((c) => (c.id === draggedCardId ? { ...c, column: col } : c))
-    );
-    setDraggedCardId(null);
-    setDragOverCol(null);
-  };
-
-  const advanceCard = (id: string) => {
-    const flow: Record<KanbanCard['column'], KanbanCard['column']> = {
-      todo: 'in_progress',
-      in_progress: 'done',
-      done: 'todo',
-    };
-    setCards((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, column: flow[c.column] } : c))
-    );
-  };
-
-  const handleAddNewCard = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCardInput.trim()) return;
-    const colors = ['#ffc93c', '#ff7eb6', '#ff7a2f', '#8fd19e', '#bfe3f0'];
-    const randomColor = colors[Math.floor(Math.random() * colors.length)];
-    const newCard: KanbanCard = {
-      id: Date.now().toString(),
-      title: newCardInput.trim(),
-      color: randomColor,
-      column: 'todo',
-    };
-    setCards((prev) => [newCard, ...prev]);
-    setNewCardInput('');
-    setShowAddInput(false);
-  };
-
-  const handleAddTodayTask = () => {
-    setStreakData((prev) => {
-      const copy = [...prev];
-      const lastIdx = copy.length - 1;
-      const current = copy[lastIdx];
-      const newCount = current.count + 1;
-      const newLevel = Math.min(4, Math.floor(newCount / 2) + 1);
-      copy[lastIdx] = { ...current, count: newCount, level: newLevel };
-      setSelectedStreak(copy[lastIdx]);
-      return copy;
-    });
-    setStreakCounter((c) => c + 1);
-  };
+    setSelectedStreak(initialGrid[68] || null);
+  }, [activities]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -370,7 +300,7 @@ export default function LandingPage({ user }: LandingPageProps) {
                 onClick={() => scrollToSection('fitur')}
                 className="pill px-6 py-3.5 bg-[#fbf3e0] text-[#1a2e1f] font-black text-sm md:text-base inline-flex items-center gap-2 hover:bg-white"
               >
-                <span>Lihat Demo</span>
+                <span>Lihat Fitur</span>
                 <ArrowRight className="w-4 h-4 rotate-90" />
               </button>
             </div>
@@ -519,7 +449,7 @@ export default function LandingPage({ user }: LandingPageProps) {
                     </div>
                   </div>
                   <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-[#fbf3e0] text-[11px] font-extrabold">
-                    Live Demo
+                    Workspace akun
                   </span>
                 </div>
 
@@ -533,36 +463,9 @@ export default function LandingPage({ user }: LandingPageProps) {
                     <div className="text-[10px] font-black uppercase text-[#1a2e1f]/60 tracking-wider">
                       Proyek
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('mvp')}
-                      className={`w-full text-left text-xs font-black px-2 py-1.5 rounded-lg border-2 transition-all ${activeTab === 'mvp'
-                          ? 'bg-[#ffc93c] border-[#1a2e1f] shadow-[2px_2px_0_#1a2e1f]'
-                          : 'border-transparent text-[#1a2e1f]/80 hover:bg-white/60'
-                        }`}
-                    >
-                      MVP
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('mobile')}
-                      className={`w-full text-left text-xs font-black px-2 py-1.5 rounded-lg border-2 transition-all ${activeTab === 'mobile'
-                          ? 'bg-[#ff7eb6] border-[#1a2e1f] shadow-[2px_2px_0_#1a2e1f]'
-                          : 'border-transparent text-[#1a2e1f]/80 hover:bg-white/60'
-                        }`}
-                    >
-                      Mobile
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('landing')}
-                      className={`w-full text-left text-xs font-black px-2 py-1.5 rounded-lg border-2 transition-all ${activeTab === 'landing'
-                          ? 'bg-[#8fd19e] border-[#1a2e1f] shadow-[2px_2px_0_#1a2e1f]'
-                          : 'border-transparent text-[#1a2e1f]/80 hover:bg-white/60'
-                        }`}
-                    >
-                      Redesign
-                    </button>
+                    <div className="w-full text-left text-xs font-black px-2 py-1.5 rounded-lg border-2 bg-[#ffc93c] border-[#1a2e1f] shadow-[2px_2px_0_#1a2e1f]">
+                      Dashboard
+                    </div>
                   </div>
 
                   {/* Main Panel */}
@@ -574,7 +477,7 @@ export default function LandingPage({ user }: LandingPageProps) {
                         style={{ borderColor: 'var(--ink)', background: '#ffc93c' }}
                       >
                         <div className="groovy text-2xl sm:text-3xl">
-                          {activeTab === 'mvp' ? '128' : activeTab === 'mobile' ? '84' : '49'}
+                          {completedTaskCount}
                         </div>
                         <div className="text-[10px] sm:text-xs font-bold text-[#1a2e1f] uppercase mt-0.5">
                           Tugas Selesai
@@ -586,7 +489,7 @@ export default function LandingPage({ user }: LandingPageProps) {
                         style={{ borderColor: 'var(--ink)', background: '#ff7eb6' }}
                       >
                         <div className="groovy text-2xl sm:text-3xl">
-                          {activeTab === 'mvp' ? '94%' : activeTab === 'mobile' ? '88%' : '98%'}
+                          {completionRate}%
                         </div>
                         <div className="text-[10px] sm:text-xs font-bold text-[#1a2e1f] uppercase mt-0.5">
                           Tepat Waktu
@@ -598,7 +501,7 @@ export default function LandingPage({ user }: LandingPageProps) {
                         style={{ borderColor: 'var(--ink)', background: '#8fd19e' }}
                       >
                         <div className="groovy text-2xl sm:text-3xl flex items-center gap-1">
-                          <span>{activeTab === 'mvp' ? '7' : activeTab === 'mobile' ? '12' : '21'}</span>
+                          <span>{streakCounter}</span>
                           <Flame className="w-5 h-5 text-[#2d6a3e] fill-current" />
                         </div>
                         <div className="text-[10px] sm:text-xs font-bold text-[#1a2e1f] uppercase mt-0.5">
@@ -611,7 +514,7 @@ export default function LandingPage({ user }: LandingPageProps) {
                     <div className="bg-[#fbf3e0] p-3 rounded-xl border-2 border-[#1a2e1f]">
                       <div className="flex justify-between items-center text-xs font-black mb-2">
                         <span>Aktivitas Sepekan</span>
-                        <span className="text-[#2d6a3e] font-extrabold">+32% Produktif</span>
+                        <span className="text-[#2d6a3e] font-extrabold">{completionRate}% selesai</span>
                       </div>
                       <div
                         className="flex items-end gap-2 h-20 px-2 pt-2 border-b-2"
@@ -648,26 +551,14 @@ export default function LandingPage({ user }: LandingPageProps) {
                       </div>
                     </div>
 
-                    {/* Task Progress Preview */}
                     <div className="space-y-1.5 pt-1">
-                      <div className="flex items-center justify-between text-xs font-bold text-[#1a2e1f]">
-                        <span className="flex items-center gap-1.5">
-                          <Check className="w-3.5 h-3.5 text-[#2d6a3e] stroke-[3]" />
-                          Autentikasi Supabase & Prisma ORM
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full bg-[#8fd19e] text-[10px] font-extrabold">
-                          SELESAI
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs font-bold text-[#1a2e1f]">
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-[#ff7a2f] stroke-[3]" />
-                          Integrasi Papan Kanban Drag & Drop
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full bg-[#ffc93c] text-[10px] font-extrabold">
-                          JALAN
-                        </span>
-                      </div>
+                      {tasks.slice(0, 2).map((task) => (
+                        <div key={task.id} className="flex items-center justify-between text-xs font-bold text-[#1a2e1f]">
+                          <span className="flex items-center gap-1.5 truncate"><Check className="w-3.5 h-3.5 text-[#2d6a3e] stroke-[3]" />{task.title}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${task.status === 'DONE' ? 'bg-[#8fd19e]' : 'bg-[#ffc93c]'}`}>{task.status === 'DONE' ? 'SELESAI' : 'ACTIF'}</span>
+                        </div>
+                      ))}
+                      {tasks.length === 0 && <p className="text-xs text-[#1a2e1f]/60">Belum ada task. Buat task pertama di dashboard.</p>}
                     </div>
                   </div>
                 </div>
@@ -736,13 +627,9 @@ export default function LandingPage({ user }: LandingPageProps) {
                       ? `Hari #${selectedStreak.day}: ${selectedStreak.count} tugas selesai`
                       : 'Klik sel'}
                   </span>
-                  <button
-                    type="button"
-                    onClick={handleAddTodayTask}
-                    className="text-[11px] font-black text-[#2d6a3e] underline hover:text-[#1f4d2b]"
-                  >
-                    + Centang Hari Ini
-                  </button>
+                  <Link href={user ? '/dashboard/tasks' : '/login'} className="text-[11px] font-black text-[#2d6a3e] underline hover:text-[#1f4d2b]">
+                    {user ? 'Buka Tasks' : 'Masuk untuk mulai'}
+                  </Link>
                 </div>
               </div>
 
@@ -766,14 +653,10 @@ export default function LandingPage({ user }: LandingPageProps) {
               </div>
 
               {/* Kanban Columns */}
-              <div className="mt-4 grid grid-cols-3 gap-2" aria-label="Contoh papan kanban">
+              <div className="mt-4 grid grid-cols-3 gap-2" aria-label="Papan kanban akun">
                 {/* TODO */}
                 <div
-                  onDragOver={(e) => handleDragOver(e, 'todo')}
-                  onDragLeave={handleDragLeave}
-                  onDrop={() => handleDrop('todo')}
-                  className={`kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5 ${dragOverCol === 'todo' ? 'drag-over' : ''
-                    }`}
+                  className="kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5"
                 >
                   <div className="text-[10px] font-black uppercase text-[#1a2e1f] flex justify-between items-center">
                     <span>RENCANA</span>
@@ -786,11 +669,6 @@ export default function LandingPage({ user }: LandingPageProps) {
                     .map((chip) => (
                       <div
                         key={chip.id}
-                        draggable
-                        onDragStart={() => handleDragStart(chip.id)}
-                        onClick={() => advanceCard(chip.id)}
-                        onKeyDown={(e) => e.key === 'Enter' && advanceCard(chip.id)}
-                        tabIndex={0}
                         className="kb-chip rounded-lg px-2 py-1 text-xs font-bold border-2 border-[#1a2e1f]"
                         style={{ background: chip.color }}
                       >
@@ -801,11 +679,7 @@ export default function LandingPage({ user }: LandingPageProps) {
 
                 {/* IN PROGRESS */}
                 <div
-                  onDragOver={(e) => handleDragOver(e, 'in_progress')}
-                  onDragLeave={handleDragLeave}
-                  onDrop={() => handleDrop('in_progress')}
-                  className={`kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5 ${dragOverCol === 'in_progress' ? 'drag-over' : ''
-                    }`}
+                  className="kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5"
                 >
                   <div className="text-[10px] font-black uppercase text-[#1a2e1f] flex justify-between items-center">
                     <span>JALAN</span>
@@ -818,11 +692,6 @@ export default function LandingPage({ user }: LandingPageProps) {
                     .map((chip) => (
                       <div
                         key={chip.id}
-                        draggable
-                        onDragStart={() => handleDragStart(chip.id)}
-                        onClick={() => advanceCard(chip.id)}
-                        onKeyDown={(e) => e.key === 'Enter' && advanceCard(chip.id)}
-                        tabIndex={0}
                         className="kb-chip rounded-lg px-2 py-1 text-xs font-bold border-2 border-[#1a2e1f]"
                         style={{ background: chip.color }}
                       >
@@ -833,11 +702,7 @@ export default function LandingPage({ user }: LandingPageProps) {
 
                 {/* DONE */}
                 <div
-                  onDragOver={(e) => handleDragOver(e, 'done')}
-                  onDragLeave={handleDragLeave}
-                  onDrop={() => handleDrop('done')}
-                  className={`kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5 ${dragOverCol === 'done' ? 'drag-over' : ''
-                    }`}
+                  className="kb-col rounded-xl p-1.5 border-2 border-[#1a2e1f] bg-white space-y-1.5"
                 >
                   <div className="text-[10px] font-black uppercase text-[#1a2e1f] flex justify-between items-center">
                     <span>BERES</span>
@@ -850,11 +715,6 @@ export default function LandingPage({ user }: LandingPageProps) {
                     .map((chip) => (
                       <div
                         key={chip.id}
-                        draggable
-                        onDragStart={() => handleDragStart(chip.id)}
-                        onClick={() => advanceCard(chip.id)}
-                        onKeyDown={(e) => e.key === 'Enter' && advanceCard(chip.id)}
-                        tabIndex={0}
                         className="kb-chip rounded-lg px-2 py-1 text-xs font-bold border-2 border-[#1a2e1f]"
                         style={{ background: chip.color }}
                       >
@@ -864,40 +724,9 @@ export default function LandingPage({ user }: LandingPageProps) {
                 </div>
               </div>
 
-              {/* Add Demo Card */}
-              {showAddInput ? (
-                <form onSubmit={handleAddNewCard} className="mt-2 flex gap-1">
-                  <input
-                    type="text"
-                    value={newCardInput}
-                    onChange={(e) => setNewCardInput(e.target.value)}
-                    placeholder="Judul kartu..."
-                    className="flex-1 px-2 py-1 text-xs rounded border border-[#1a2e1f] focus:outline-none"
-                    autoFocus
-                  />
-                  <button
-                    type="submit"
-                    className="px-2 py-1 text-xs font-bold bg-[#8fd19e] rounded border border-[#1a2e1f]"
-                  >
-                    OK
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddInput(false)}
-                    className="p-1 text-xs font-bold bg-gray-200 rounded border border-[#1a2e1f] flex items-center justify-center"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </form>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowAddInput(true)}
-                  className="mt-2 text-left text-[11px] font-bold text-[#1a2e1f]/70 hover:text-[#1a2e1f] flex items-center gap-1"
-                >
-                  <Plus className="w-3 h-3 stroke-[3]" /> Tambah kartu
-                </button>
-              )}
+              <Link href={user ? '/dashboard/tasks' : '/login'} className="mt-2 inline-flex text-[11px] font-bold text-[#1a2e1f]/70 hover:text-[#1a2e1f]">
+                {user ? 'Kelola task di dashboard →' : 'Masuk untuk mengelola task →'}
+              </Link>
 
               <h3 className="groovy mt-4 text-2xl text-[#1a2e1f]">
                 Papan Kanban
@@ -918,67 +747,14 @@ export default function LandingPage({ user }: LandingPageProps) {
                 </span>
               </div>
 
-              {/* Static Task Items (Clean Lucide Icons, No Movement) */}
               <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-between rounded-xl px-3 py-2 border-2 border-[#1a2e1f] bg-white">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-6 h-6 rounded-md grid place-items-center border border-[#1a2e1f]"
-                      style={{ background: '#ff7a2f' }}
-                    >
-                      <Clock className="w-3.5 h-3.5 text-[#1a2e1f]" />
-                    </span>
-                    <span className="text-xs font-extrabold">Demo Klien MVP</span>
+                {tasks.slice(0, 4).map((task, index) => (
+                  <div key={task.id} className="flex items-center justify-between rounded-xl px-3 py-2 border-2 border-[#1a2e1f] bg-white">
+                    <div className="flex items-center gap-2 min-w-0"><span className="w-6 h-6 rounded-md grid place-items-center border border-[#1a2e1f]" style={{ background: ['#ff7a2f', '#ffc93c', '#ff7eb6', '#bfe3f0'][index] }}><Clock className="w-3.5 h-3.5 text-[#1a2e1f]" /></span><span className="text-xs font-extrabold truncate">{task.title}</span></div>
+                    <span className="text-[10px] font-black text-[#1a2e1f] bg-[#ffc93c]/30 px-2 py-0.5 rounded-full border border-[#1a2e1f]/20">{task.priority}</span>
                   </div>
-                  <span className="text-[10px] font-black text-[#ff7a2f] bg-[#ff7a2f]/10 px-2 py-0.5 rounded-full border border-[#ff7a2f]/30">
-                    2 jam lagi
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between rounded-xl px-3 py-2 border-2 border-[#1a2e1f] bg-white">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-6 h-6 rounded-md grid place-items-center border border-[#1a2e1f]"
-                      style={{ background: '#ffc93c' }}
-                    >
-                      <Bell className="w-3.5 h-3.5 text-[#1a2e1f]" />
-                    </span>
-                    <span className="text-xs font-extrabold">Review Pull Request</span>
-                  </div>
-                  <span className="text-[10px] font-black text-[#1a2e1f] bg-[#ffc93c]/30 px-2 py-0.5 rounded-full border border-[#1a2e1f]/20">
-                    Besok
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between rounded-xl px-3 py-2 border-2 border-[#1a2e1f] bg-white">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-6 h-6 rounded-md grid place-items-center border border-[#1a2e1f]"
-                      style={{ background: '#ff7eb6' }}
-                    >
-                      <Pin className="w-3.5 h-3.5 text-[#1a2e1f]" />
-                    </span>
-                    <span className="text-xs font-extrabold">Dokumentasi API</span>
-                  </div>
-                  <span className="text-[10px] font-black text-[#ff7eb6] bg-[#ff7eb6]/10 px-2 py-0.5 rounded-full border border-[#ff7eb6]/30">
-                    3 hari
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between rounded-xl px-3 py-2 border-2 border-[#1a2e1f] bg-white">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-6 h-6 rounded-md grid place-items-center border border-[#1a2e1f]"
-                      style={{ background: '#bfe3f0' }}
-                    >
-                      <Calendar className="w-3.5 h-3.5 text-[#1a2e1f]" />
-                    </span>
-                    <span className="text-xs font-extrabold">Riset Fitur Baru</span>
-                  </div>
-                  <span className="text-[10px] font-black text-[#1a2e1f]/70 bg-[#bfe3f0]/30 px-2 py-0.5 rounded-full border border-[#1a2e1f]/20">
-                    Pekan depan
-                  </span>
-                </div>
+                ))}
+                {tasks.length === 0 && <p className="text-xs text-[#1a2e1f]/60">Belum ada task tersimpan.</p>}
               </div>
 
               <h3 className="groovy mt-4 text-2xl text-[#1a2e1f]">
@@ -1077,7 +853,7 @@ export default function LandingPage({ user }: LandingPageProps) {
 
               <span className="absolute -top-3 -right-2 rotate-6 px-3.5 py-1.5 rounded-full border-[3px] border-[#1a2e1f] bg-[#ffc93c] font-black text-xs md:text-sm text-[#1a2e1f] inline-flex items-center gap-1.5 shadow-sm">
                 <Trophy className="w-4 h-4 text-[#1a2e1f]" />
-                10.000+ Tugas Selesai
+                {completedTaskCount} Tugas Selesai
               </span>
             </div>
 

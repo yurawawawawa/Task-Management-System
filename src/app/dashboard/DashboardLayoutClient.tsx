@@ -1,6 +1,9 @@
 'use client';
 
 import { useTheme } from '@/app/context/ThemeContext';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/app/lib/supabase/client';
 import Link from 'next/link';
 import LogoutButton from './LogoutButton';
 import MobileNav from './MobileNav';
@@ -10,19 +13,42 @@ import TreklyLogo from '@/app/components/TreklyLogo';
 interface DashboardLayoutClientProps {
   profile: any;
   authUser: any;
+  currentStreak: number;
+  freezeCount: number;
   children: React.ReactNode;
 }
 
 export default function DashboardLayoutClient({
   profile,
   authUser,
+  currentStreak,
+  freezeCount,
   children,
 }: DashboardLayoutClientProps) {
   const { themeStyle } = useTheme();
+  const router = useRouter();
+
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`dashboard-realtime-${authUser.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `user_id=eq.${authUser.id}` }, () => router.refresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `user_id=eq.${authUser.id}` }, () => router.refresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_activities', filter: `user_id=eq.${authUser.id}` }, () => router.refresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'habits', filter: `user_id=eq.${authUser.id}` }, () => router.refresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'habit_completions' }, () => router.refresh())
+      .subscribe();
+    const refreshInterval = window.setInterval(() => router.refresh(), 30000);
+
+    return () => {
+      window.clearInterval(refreshInterval);
+      void supabase.removeChannel(channel);
+    };
+  }, [authUser.id, router]);
 
   return (
     <div
-      className={`min-h-screen flex flex-col md:flex-row relative transition-colors duration-200 ${
+      className={`trekly-dashboard-shell min-h-screen flex flex-col md:flex-row relative transition-colors duration-200 ${
         themeStyle === 'retro'
           ? "bg-[#fbf3e0] font-['Alegreya_Sans',sans-serif] text-[#1a2e1f]"
           : "bg-[#f8fafc] font-sans text-slate-800"
@@ -89,7 +115,7 @@ export default function DashboardLayoutClient({
 
         {/* Sidebar Nav links & Gamification widget */}
         <div className="flex-1 overflow-y-auto">
-          <SidebarNav />
+          <SidebarNav currentStreak={currentStreak} freezeCount={freezeCount} />
         </div>
 
         {/* Profile Card & Logout in Sidebar Footer */}
@@ -142,7 +168,7 @@ export default function DashboardLayoutClient({
           }`}
         >
           <div className="flex items-center gap-2">
-            <MobileNav />
+            <MobileNav currentStreak={currentStreak} freezeCount={freezeCount} />
             <Link href="/dashboard" className="flex items-center gap-2">
               <div
                 className={`w-8 h-8 rounded-xl flex items-center justify-center ${

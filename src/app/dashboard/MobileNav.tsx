@@ -8,7 +8,7 @@ import { DASHBOARD_NAV_ITEMS } from './SidebarNav';
 import TreklyLogo from '@/app/components/TreklyLogo';
 import { useTheme } from '@/app/context/ThemeContext';
 
-export default function MobileNav() {
+export default function MobileNav({ currentStreak, freezeCount }: { currentStreak: number; freezeCount: number }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { themeStyle, accentColor } = useTheme();
@@ -231,7 +231,7 @@ export default function MobileNav() {
                         : 'fill-emerald-600 text-emerald-600'
                     }`}
                   />
-                  Streak 7 Hari
+                  Streak {currentStreak} Hari
                 </span>
                 <span
                   className={`flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${
@@ -241,7 +241,7 @@ export default function MobileNav() {
                   }`}
                 >
                   <Snowflake className="w-3 h-3 text-[#0a93c7]" />
-                  2 Freeze
+                  {freezeCount} Freeze
                 </span>
               </div>
               <p

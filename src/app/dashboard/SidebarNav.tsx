@@ -72,7 +72,7 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export default function SidebarNav() {
+export default function SidebarNav({ currentStreak, freezeCount }: { currentStreak: number; freezeCount: number }) {
   const pathname = usePathname();
   const { themeStyle, accentColor } = useTheme();
 
@@ -192,7 +192,7 @@ export default function SidebarNav() {
                   : 'fill-emerald-600 text-emerald-600'
               }`}
             />
-            <span>Streak 7 Hari</span>
+            <span>Streak {currentStreak} Hari</span>
           </span>
           <span
             className={`flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full ${
@@ -202,7 +202,7 @@ export default function SidebarNav() {
             }`}
           >
             <Snowflake className="w-3 h-3 text-[#0a93c7]" />
-            2 Freeze
+            {freezeCount} Freeze
           </span>
         </div>
         <p
