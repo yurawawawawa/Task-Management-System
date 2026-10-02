@@ -33,6 +33,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const registered = searchParams.get('registered');
+  const passwordReset = searchParams.get('password_reset') === 'true';
   const oauthError = searchParams.get('error');
   const emailParam = searchParams.get('email') || '';
   const existingParam = searchParams.get('existing') === 'true';
@@ -47,6 +48,8 @@ function LoginForm() {
   );
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
 
   // Sinkronkan email jika emailParam berubah di URL
   useEffect(() => {
@@ -110,6 +113,32 @@ function LoginForm() {
     submitCredentials();
   };
 
+  const handleForgotPassword = async () => {
+    const formEmail = email.trim();
+    setError('');
+    setForgotSent(false);
+
+    if (!formEmail) {
+      setError('Masukkan email terlebih dahulu untuk menerima link reset password.');
+      return;
+    }
+
+    setForgotLoading(true);
+    const supabase = createClient();
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(formEmail, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+    });
+
+    if (resetError) {
+      setError(resetError.message);
+      setForgotLoading(false);
+      return;
+    }
+
+    setForgotLoading(false);
+    setForgotSent(true);
+  };
+
   // Google OAuth Login
   const handleGoogleLogin = async () => {
     setError('');
@@ -155,6 +184,13 @@ function LoginForm() {
         <div className="bg-[#8fd19e]/20 text-[#1f4d2b] p-3 rounded-xl text-xs mb-5 border-2 border-[#8fd19e] font-bold flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 shrink-0 text-[#2d6a3e]" />
           <span>Akun berhasil dibuat! Silakan masuk dengan email dan password-mu.</span>
+        </div>
+      )}
+
+      {passwordReset && (
+        <div className="bg-[#8fd19e]/20 text-[#1f4d2b] p-3 rounded-xl text-xs mb-5 border-2 border-[#8fd19e] font-bold flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-[#2d6a3e]" />
+          <span>Password berhasil diubah. Silakan login dengan password baru.</span>
         </div>
       )}
 
@@ -225,6 +261,14 @@ function LoginForm() {
             <label htmlFor="password" className="block text-xs font-extrabold text-[#1a2e1f]">
               Password
             </label>
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={forgotLoading}
+              className="text-[11px] font-black text-[#2d6a3e] underline underline-offset-2 hover:text-[#1a2e1f] disabled:opacity-50"
+            >
+              {forgotLoading ? 'Mengirim...' : 'Lupa password?'}
+            </button>
           </div>
           <input
             id="password"
@@ -264,6 +308,13 @@ function LoginForm() {
           )}
         </button>
       </form>
+
+      {forgotSent && (
+        <div className="mt-3 flex items-start gap-2 rounded-xl border-2 border-[#1a2e1f] bg-[#d9f7df] p-3 text-xs font-bold text-[#1a2e1f]">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>Link reset password sudah dikirim. Periksa inbox dan folder spam.</span>
+        </div>
+      )}
 
       <div className="mt-6 text-center text-xs font-bold text-[#1a2e1f]/80">
         Belum punya akun?{' '}
