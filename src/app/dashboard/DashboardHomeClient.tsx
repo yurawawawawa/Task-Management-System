@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Flame,
@@ -12,9 +13,7 @@ import {
   CalendarCheck2,
   Sparkles,
   Snowflake,
-  Clock,
   Kanban,
-  Check,
   Target
 } from 'lucide-react';
 import { updateTaskStatus, createPersonalTask } from './actions';
@@ -28,41 +27,34 @@ interface TaskItem {
   createdAt: string;
 }
 
-interface HabitItem {
-  id: string;
-  name: string;
-  category: string;
-  streak: number;
-  completedToday: boolean;
+interface ActivityItem {
+  date: string;
+  count: number;
 }
 
 interface DashboardHomeClientProps {
   userName: string;
   tasks: TaskItem[];
   streakDays: number;
+  freezeCount: number;
   weeklyCompletionRate: number;
   totalWeeklyTasks: number;
   completedWeeklyTasks: number;
+  activities: ActivityItem[];
 }
-
-const INITIAL_HABITS: HabitItem[] = [
-  { id: 'h1', name: 'Olahraga Pagi 20 Menit', category: 'Kesehatan', streak: 9, completedToday: true },
-  { id: 'h2', name: 'Belajar Coding & Refactor Code', category: 'Skill', streak: 7, completedToday: true },
-  { id: 'h3', name: 'Membaca Buku 15 Menit', category: 'Mindset', streak: 14, completedToday: false },
-  { id: 'h4', name: 'Minum Air Putih 2 Liter', category: 'Kesehatan', streak: 5, completedToday: true },
-  { id: 'h5', name: 'Review Catatan & Refleksi', category: 'Mindset', streak: 4, completedToday: false },
-];
 
 export default function DashboardHomeClient({
   userName,
   tasks: initialTasks,
   streakDays,
+  freezeCount,
   weeklyCompletionRate,
   totalWeeklyTasks,
   completedWeeklyTasks,
+  activities,
 }: DashboardHomeClientProps) {
+  const router = useRouter();
   const [tasks, setTasks] = useState<TaskItem[]>(initialTasks);
-  const [habits, setHabits] = useState<HabitItem[]>(INITIAL_HABITS);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskPriority, setNewTaskPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'>('MEDIUM');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,7 +62,10 @@ export default function DashboardHomeClient({
 
   const completedTodayCount = tasks.filter((t) => t.status === 'DONE').length;
   const totalTasksCount = tasks.length;
-  const completedHabitsCount = habits.filter((h) => h.completedToday).length;
+  const recentActivities = activities
+    .filter((activity) => activity.count > 0)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 5);
 
   const handleToggleTask = async (task: TaskItem) => {
     const nextStatus = task.status === 'DONE' ? 'TODO' : 'DONE';
@@ -80,6 +75,7 @@ export default function DashboardHomeClient({
 
     try {
       await updateTaskStatus(task.id, nextStatus);
+      router.refresh();
     } catch (err) {
       console.error('Failed to update task status', err);
       // rollback
@@ -99,26 +95,13 @@ export default function DashboardHomeClient({
       if (created) {
         setTasks((prev) => [created as any, ...prev]);
         setNewTaskTitle('');
+        router.refresh();
       }
     } catch (err) {
       console.error('Failed to create task', err);
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleToggleHabit = (id: string) => {
-    setHabits((prev) =>
-      prev.map((h) =>
-        h.id === id
-          ? {
-              ...h,
-              completedToday: !h.completedToday,
-              streak: !h.completedToday ? h.streak + 1 : Math.max(0, h.streak - 1),
-            }
-          : h
-      )
-    );
   };
 
   const filteredTasks = tasks.filter((t) => {
@@ -166,11 +149,11 @@ export default function DashboardHomeClient({
             </div>
             <span className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-200">
               <Snowflake className="w-3 h-3 text-sky-600" />
-              2 Freeze Aktif
+              {freezeCount} Freeze Tersedia
             </span>
           </div>
           <div className="text-3xl font-black text-foreground tracking-tight">
-            {streakDays || 7} Hari
+            {streakDays} Hari
           </div>
           <p className="text-xs text-muted-foreground font-semibold mt-1">
             Streak Saat Ini &middot; Api Menyala
@@ -216,18 +199,18 @@ export default function DashboardHomeClient({
               <TrendingUp className="w-5 h-5" />
             </div>
             <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              +8% vs Lalu
+              {totalWeeklyTasks > 0 ? `${completedWeeklyTasks}/${totalWeeklyTasks}` : 'Belum ada data'}
             </span>
           </div>
           <div className="text-3xl font-black text-foreground tracking-tight">
-            {weeklyCompletionRate || 85}%
+            {weeklyCompletionRate}%
           </div>
           <p className="text-xs text-muted-foreground font-semibold mt-1">
             Completion Rate Minggu Ini
           </p>
           <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Total terselesaikan:</span>
-            <span className="font-black text-foreground">{completedWeeklyTasks || 12} task</span>
+            <span className="font-black text-foreground">{completedWeeklyTasks} task</span>
           </div>
         </div>
       </div>
@@ -400,59 +383,35 @@ export default function DashboardHomeClient({
           </div>
         </div>
 
-        {/* Right Column (1 Col): Daily Habits & Productivity Map Shortcuts */}
+        {/* Right Column (1 Col): Real activity summary & Productivity Map shortcuts */}
         <div className="space-y-6">
-          {/* Habits Daily Checklist Widget */}
+          {/* Recent activity widget */}
           <div className="bg-white p-6 rounded-3xl border-2 border-border shadow-xs">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <CalendarCheck2 className="w-5 h-5 text-[#ff7a2f]" />
-                <h2 className="text-base font-black text-foreground">Habit Hari Ini</h2>
+                <h2 className="text-base font-black text-foreground">Aktivitas Terbaru</h2>
               </div>
               <span className="text-xs font-black px-2 py-0.5 rounded-full bg-[#ff7a2f]/10 text-[#ff7a2f] border border-[#ff7a2f]/20">
-                {completedHabitsCount} / {habits.length}
+                {recentActivities.length} hari
               </span>
             </div>
 
             <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
-              Checklist kebiasaan harian. Setiap centang ikut menyumbang ke skor Productivity Map!
+              Ringkasan ini berasal dari task yang terselesaikan dan tercatat di database.
             </p>
 
             <div className="mt-4 space-y-2">
-              {habits.map((habit) => (
-                <div
-                  key={habit.id}
-                  onClick={() => handleToggleHabit(habit.id)}
-                  className={`flex items-center justify-between p-3 rounded-2xl border-2 cursor-pointer transition-all ${
-                    habit.completedToday
-                      ? 'bg-amber-50/50 border-amber-200'
-                      : 'bg-muted/20 border-border hover:border-[#ff7a2f]/40'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-all ${
-                        habit.completedToday
-                          ? 'bg-[#ff7a2f] border-[#ff7a2f] text-white'
-                          : 'border-muted-foreground/50 bg-white'
-                      }`}
-                    >
-                      {habit.completedToday && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                    </div>
-                    <span
-                      className={`text-xs font-extrabold truncate ${
-                        habit.completedToday
-                          ? 'line-through text-muted-foreground'
-                          : 'text-foreground'
-                      }`}
-                    >
-                      {habit.name}
-                    </span>
-                  </div>
-
-                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-[#ff7a2f] shrink-0">
-                    <Flame className="w-3 h-3 fill-[#ff7a2f]" />
-                    {habit.streak}d
+              {recentActivities.length === 0 ? (
+                <div className="p-4 rounded-2xl border border-dashed border-border text-xs text-muted-foreground">
+                  Belum ada aktivitas tercatat.
+                </div>
+              ) : recentActivities.map((activity) => (
+                <div key={activity.date} className="flex items-center justify-between p-3 rounded-2xl border-2 border-border bg-muted/20">
+                  <span className="text-xs font-extrabold text-foreground">{activity.date}</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-[#ff7a2f]">
+                    <CheckCircle2 className="w-3 h-3" />
+                    {activity.count} task
                   </span>
                 </div>
               ))}
@@ -462,7 +421,7 @@ export default function DashboardHomeClient({
               href="/dashboard/habits"
               className="mt-4 w-full py-2.5 bg-muted hover:bg-muted-hover text-foreground font-black text-xs rounded-2xl border border-border flex items-center justify-center gap-1.5 transition-colors"
             >
-              <span>Kelola Semua Habit</span>
+              <span>Lihat Semua Aktivitas</span>
               <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
             </Link>
           </div>

@@ -29,7 +29,7 @@ interface ProductivityClientProps {
   longestStreak: number;
   totalActiveDays: number;
   totalCompleted: number;
-  freezeCount?: number;
+  freezeCount: number;
   activities: ActivityDay[];
   todayStr: string;
 }
@@ -44,7 +44,7 @@ export default function ProductivityClient({
   longestStreak,
   totalActiveDays,
   totalCompleted,
-  freezeCount: initialFreezeCount = 2,
+  freezeCount: initialFreezeCount,
   activities,
   todayStr,
 }: ProductivityClientProps) {
@@ -127,6 +127,9 @@ export default function ProductivityClient({
   // Filter activities based on selected range
   const daysLimit = selectedRange === '3M' ? 91 : selectedRange === '6M' ? 182 : 364;
   const filteredActivities = activities.slice(-daysLimit);
+  const rhythmScore = longestStreak > 0
+    ? Math.min(100, Math.round((currentStreak / longestStreak) * 100))
+    : 0;
 
   // Group into columns of 7 days (Monday to Sunday)
   const weeks: ActivityDay[][] = [];
@@ -497,7 +500,7 @@ export default function ProductivityClient({
               Kebugaran Ritme
             </span>
             <span className="text-2xl font-black text-sky-800 tracking-tight mt-1 block">
-              94%
+              {rhythmScore}%
             </span>
           </div>
         </div>

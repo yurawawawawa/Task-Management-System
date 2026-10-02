@@ -4,13 +4,15 @@ import { createClient } from '@/app/lib/supabase/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { themeStyle, accentColor } = body;
+    const { themeStyle, accentColor, colorMode } = body;
 
     const validThemes = ['retro', 'minimal'];
     const validAccents = ['orange', 'green'];
+    const validColorModes = ['light', 'dark'];
 
     const theme = validThemes.includes(themeStyle) ? themeStyle : 'retro';
     const accent = validAccents.includes(accentColor) ? accentColor : 'orange';
+    const mode = validColorModes.includes(colorMode) ? colorMode : 'light';
 
     const supabase = await createClient();
     const {
@@ -24,6 +26,7 @@ export async function POST(request: NextRequest) {
         data: {
           themeStyle: theme,
           accentColor: accent,
+          colorMode: mode,
         },
       });
     }
@@ -32,6 +35,7 @@ export async function POST(request: NextRequest) {
       success: true,
       themeStyle: theme,
       accentColor: accent,
+      colorMode: mode,
     });
 
     const ONE_YEAR_IN_SECONDS = 365 * 24 * 60 * 60;
@@ -43,6 +47,12 @@ export async function POST(request: NextRequest) {
     });
 
     response.cookies.set('trekly_accent_color', accent, {
+      maxAge: ONE_YEAR_IN_SECONDS,
+      path: '/',
+      sameSite: 'lax',
+    });
+
+    response.cookies.set('trekly_color_mode', mode, {
       maxAge: ONE_YEAR_IN_SECONDS,
       path: '/',
       sameSite: 'lax',

@@ -76,17 +76,52 @@ export async function deleteTask(taskId: string) {
   revalidatePath('/dashboard/productivity');
 }
 
-export async function recordHabitCompletion(action: 'increment' | 'decrement' = 'increment') {
+export async function createHabit(title: string, category = 'Produktivitas', frequency = 'DAILY') {
   const user = await getAuthUser();
   if (!user) throw new Error('Unauthorized');
 
-  const result = await recordDailyActivity(user.id, {
-    type: 'habit',
-    action,
+  const trimmed = title.trim();
+  if (!trimmed) throw new Error('Habit title cannot be empty');
+
+  const habit = await db.orm.public.Habit.create({
+    userId: user.id,
+    title: trimmed,
+    category: category.trim() || 'Produktivitas',
+    frequency,
   });
 
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/habits');
+  return habit;
+}
+
+export async function deleteHabit(habitId: string) {
+  const user = await getAuthUser();
+  if (!user) throw new Error('Unauthorized');
+
+  await db.orm.public.Habit.where({ id: habitId, userId: user.id }).delete();
+  revalidatePath('/dashboard');
+  revalidatePath('/dashboard/habits');
   revalidatePath('/dashboard/productivity');
-  return result;
+}
+
+export async function toggleHabitCompletion(habitId: string, date: string, completed: boolean) {
+  const user = await getAuthUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const habit = await db.orm.public.Habit.where({ id: habitId, userId: user.id }).first();
+  if (!habit) throw new Error('Habit not found');
+
+  const existing = await db.orm.public.HabitCompletion.where({ habitId, date }).first();
+  if (completed && !existing) {
+    await db.orm.public.HabitCompletion.create({ habitId, date });
+    await recordDailyActivity(user.id, { type: 'habit', action: 'increment', date });
+  } else if (!completed && existing) {
+    await db.orm.public.HabitCompletion.where({ id: existing.id }).delete();
+    await recordDailyActivity(user.id, { type: 'habit', action: 'decrement', date });
+  }
+
+  revalidatePath('/dashboard');
+  revalidatePath('/dashboard/habits');
+  revalidatePath('/dashboard/productivity');
 }

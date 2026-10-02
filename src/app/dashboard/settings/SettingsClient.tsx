@@ -14,6 +14,8 @@ import {
   Clock,
   Save,
   Laptop,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 
@@ -26,7 +28,7 @@ interface SettingsClientProps {
 }
 
 export default function SettingsClient({ user }: SettingsClientProps) {
-  const { themeStyle, accentColor, setThemeStyle, setAccentColor } = useTheme();
+  const { themeStyle, accentColor, colorMode, setThemeStyle, setAccentColor, setColorMode } = useTheme();
 
   const [activeTab, setActiveTab] = useState<'account' | 'notifications' | 'appearance' | 'subscription'>('appearance');
   const [name, setName] = useState(user.name || '');
@@ -319,6 +321,67 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                       <span>Forest Green</span>
                       <span className="text-[10px] opacity-60">(#1f4d2b)</span>
                     </button>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 space-y-3">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <label className="text-xs font-black block mb-1 text-slate-700">
+                          Mode Warna
+                        </label>
+                        <p className="text-xs text-slate-500">
+                          Aktifkan mode gelap untuk tampilan Minimalist Clean yang lebih nyaman di malam hari.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={colorMode === 'dark'}
+                        aria-label="Toggle mode gelap"
+                        onClick={() => setColorMode(colorMode === 'dark' ? 'light' : 'dark')}
+                        className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border-2 transition-colors ${
+                          colorMode === 'dark'
+                            ? 'border-slate-700 bg-slate-700'
+                            : 'border-slate-200 bg-slate-100'
+                        }`}
+                      >
+                        <span
+                          className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm transition-transform ${
+                            colorMode === 'dark' ? 'translate-x-5' : 'translate-x-0.5'
+                          }`}
+                        >
+                          {colorMode === 'dark' ? (
+                            <Moon className="h-3 w-3 text-slate-700" />
+                          ) : (
+                            <Sun className="h-3 w-3 text-amber-500" />
+                          )}
+                        </span>
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setColorMode('light')}
+                        className={`inline-flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2 text-xs font-black transition-all ${
+                          colorMode === 'light'
+                            ? 'border-blue-600 bg-blue-50/70 text-blue-950 ring-2 ring-blue-500/30'
+                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <Sun className="h-3.5 w-3.5" /> Terang
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setColorMode('dark')}
+                        className={`inline-flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2 text-xs font-black transition-all ${
+                          colorMode === 'dark'
+                            ? 'border-blue-600 bg-blue-50/70 text-blue-950 ring-2 ring-blue-500/30'
+                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <Moon className="h-3.5 w-3.5" /> Gelap
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

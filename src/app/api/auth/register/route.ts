@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     }
 
     // In Supabase, when email enumeration protection is enabled,
-    // signUp for an existing user returns a dummy user with empty identities array
+    // Supabase may return an existing-user placeholder with an empty identities array
     if (authData.user.identities && authData.user.identities.length === 0) {
       return NextResponse.json(
         {

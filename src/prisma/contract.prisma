@@ -23,6 +23,7 @@ model Profile {
   assignedTasks   Task[]         @relation("AssignedTasks")
   projectMembers  ProjectMember[]
   dailyActivities DailyActivity[]
+  habits          Habit[]
 
   @@map("profiles")
   @@rls
@@ -142,5 +143,40 @@ model DailyActivity {
   @@index([userId])
   @@index([userId, date])
   @@map("daily_activities")
+  @@rls
+}
+
+// ============================================
+// Habits
+// ============================================
+
+model Habit {
+  id          Uuid              @id @default(uuid())
+  userId      Uuid              @map("user_id")
+  title       String
+  category    String            @default("Produktivitas")
+  frequency   String            @default("DAILY")
+  createdAt   TimestamptzString @default(now()) @map("created_at")
+  updatedAt   temporal.updatedAtString() @map("updated_at")
+
+  user        Profile           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completions HabitCompletion[]
+
+  @@index([userId])
+  @@map("habits")
+  @@rls
+}
+
+model HabitCompletion {
+  id          Uuid              @id @default(uuid())
+  habitId     Uuid              @map("habit_id")
+  date        String
+  completedAt TimestamptzString @default(now()) @map("completed_at")
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+  @@index([habitId, date])
+  @@map("habit_completions")
   @@rls
 }
