@@ -106,6 +106,12 @@ export default function LandingPage({ user }: LandingPageProps) {
   const [activeTab, setActiveTab] = useState<'mvp' | 'mobile' | 'landing'>('mvp');
 
   useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    if (hashParams.get('type') === 'recovery' && hashParams.get('access_token')) {
+      window.location.replace(`/reset-password${window.location.hash}`);
+      return;
+    }
+
     const initialGrid = Array.from({ length: 70 }, (_, i) => {
       const rand = Math.random();
       const level = rand > 0.82 ? 4 : rand > 0.62 ? 3 : rand > 0.4 ? 2 : rand > 0.2 ? 1 : 0;
