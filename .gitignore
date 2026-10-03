@@ -47,5 +47,8 @@ next-env.d.ts
 # auto-generated agent files
 AGENTS.md
 CLAUDE.md
+.agents/skills/
+.claude/skills/
+.cursor/skills/
 node_modules/
 dist/
