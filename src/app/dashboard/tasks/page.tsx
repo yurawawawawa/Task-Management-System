@@ -23,6 +23,7 @@ export default async function TasksPage() {
         status: t.status as any,
         priority: t.priority as any,
         createdAt: t.createdAt,
+        dueDate: t.dueDate,
       }))}
     />
   );

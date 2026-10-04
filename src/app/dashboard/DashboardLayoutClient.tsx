@@ -1,7 +1,7 @@
 'use client';
 
 import { useTheme } from '@/app/context/ThemeContext';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase/client';
 import Link from 'next/link';
@@ -27,24 +27,35 @@ export default function DashboardLayoutClient({
 }: DashboardLayoutClientProps) {
   const { themeStyle } = useTheme();
   const router = useRouter();
+  const refreshTimerRef = useRef<number | null>(null);
+
+  const scheduleRefresh = useCallback(() => {
+    if (refreshTimerRef.current !== null) return;
+
+    refreshTimerRef.current = window.setTimeout(() => {
+      refreshTimerRef.current = null;
+      router.refresh();
+    }, 250);
+  }, [router]);
 
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
       .channel(`dashboard-realtime-${authUser.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `user_id=eq.${authUser.id}` }, () => router.refresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `user_id=eq.${authUser.id}` }, () => router.refresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_activities', filter: `user_id=eq.${authUser.id}` }, () => router.refresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'habits', filter: `user_id=eq.${authUser.id}` }, () => router.refresh())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'habit_completions' }, () => router.refresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `user_id=eq.${authUser.id}` }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `user_id=eq.${authUser.id}` }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_activities', filter: `user_id=eq.${authUser.id}` }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'habits', filter: `user_id=eq.${authUser.id}` }, scheduleRefresh)
       .subscribe();
-    const refreshInterval = window.setInterval(() => router.refresh(), 30000);
 
     return () => {
-      window.clearInterval(refreshInterval);
+      if (refreshTimerRef.current !== null) {
+        window.clearTimeout(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
       void supabase.removeChannel(channel);
     };
-  }, [authUser.id, router]);
+  }, [authUser.id, scheduleRefresh]);
 
   return (
     <div

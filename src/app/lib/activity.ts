@@ -1,6 +1,7 @@
 import { db } from '@/prisma/db';
 import { getTodayDateStr, daysBetween, calculateStreakWithFreeze, DailyActivity } from './streaks';
-import { createClient } from './supabase/server';
+import { createClient, getAuthUser } from './supabase/server';
+import { cache } from 'react';
 
 interface RecordActivityOptions {
   date?: string;
@@ -103,19 +104,17 @@ export async function recordDailyActivity(
 /**
  * Fetches all daily activities and streak stats for a user.
  */
-export async function getUserProductivityStats(userId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export const getUserProductivityStats = cache(async function getUserProductivityStats(userId: string) {
+  const user = await getAuthUser();
 
   const freezeCount = typeof user?.user_metadata?.freezeCount === 'number'
     ? user.user_metadata.freezeCount
     : 2;
 
-  const activities = await db.orm.public.DailyActivity.where({
-    userId,
-  }).all();
+  const [activities, completedTasks] = await Promise.all([
+    db.orm.public.DailyActivity.where({ userId }).all(),
+    db.orm.public.Task.where({ userId, status: 'DONE' }).all(),
+  ]);
 
   const todayStr = getTodayDateStr();
 
@@ -129,6 +128,7 @@ export async function getUserProductivityStats(userId: string) {
   // If freeze count was automatically reduced, update user metadata
   if (user && streakStats.remainingFreeze !== freezeCount) {
     try {
+      const supabase = await createClient();
       await supabase.auth.updateUser({
         data: {
           freezeCount: streakStats.remainingFreeze,
@@ -143,12 +143,6 @@ export async function getUserProductivityStats(userId: string) {
     }
   }
 
-  // Count total completed tasks
-  const completedTasks = await db.orm.public.Task.where({
-    userId,
-    status: 'DONE',
-  }).all();
-
   const totalDailyCompleted = activities.reduce((acc, curr) => acc + curr.taskCount, 0);
   const totalCompleted = Math.max(completedTasks.length, totalDailyCompleted);
 
@@ -162,4 +156,4 @@ export async function getUserProductivityStats(userId: string) {
     totalCompleted,
     activities,
   };
-}
+});

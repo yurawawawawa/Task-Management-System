@@ -27,7 +27,7 @@ export default function NewProjectPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create project');
 
-      router.push('/dashboard');
+      router.push('/dashboard/projects');
       router.refresh();
     } catch (err: any) {
       setError(err.message);
@@ -37,7 +37,7 @@ export default function NewProjectPage() {
 
   return (
     <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pt-8">
-      <Link href="/dashboard" className="inline-flex items-center min-h-[44px] md:min-h-0 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-8">
+      <Link href="/dashboard/projects" className="inline-flex items-center min-h-[44px] md:min-h-0 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-8">
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back to projects
       </Link>
@@ -88,7 +88,7 @@ export default function NewProjectPage() {
 
           <div className="pt-6 flex items-center justify-end border-t border-border-light gap-3">
             <Link
-              href="/dashboard"
+              href="/dashboard/projects"
               className="inline-flex items-center justify-center px-5 min-h-[44px] md:min-h-0 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Cancel

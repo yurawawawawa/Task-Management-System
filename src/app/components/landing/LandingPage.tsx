@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Check,
@@ -92,9 +92,23 @@ export default function LandingPage({ user, tasks = [], activities = [], current
   })));
 
   // Streak Grid State (70 cells = 14 x 5)
-  const [streakData, setStreakData] = useState<Array<{ day: number; count: number; level: number }>>([]);
-  const [selectedStreak, setSelectedStreak] = useState<{ day: number; count: number } | null>(null);
+  const [selectedStreakDay, setSelectedStreakDay] = useState(68);
   const [streakCounter] = useState(currentStreak);
+
+  const streakData = useMemo(() => {
+    const activityMap = new Map(activities.map((activity) => [activity.date, activity.count]));
+
+    return Array.from({ length: 70 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (69 - i));
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      const count = activityMap.get(dateStr) || 0;
+      const level = count >= 6 ? 4 : count >= 4 ? 3 : count >= 2 ? 2 : count >= 1 ? 1 : 0;
+      return { day: i + 1, count, level };
+    });
+  }, [activities]);
+
+  const selectedStreak = streakData[selectedStreakDay] || null;
 
   const completedTaskCount = tasks.filter((task) => task.status === 'DONE').length;
   const completionRate = tasks.length ? Math.round((completedTaskCount / tasks.length) * 100) : 0;
@@ -103,21 +117,8 @@ export default function LandingPage({ user, tasks = [], activities = [], current
     const hashParams = new URLSearchParams(window.location.hash.slice(1));
     if (hashParams.get('type') === 'recovery' && hashParams.get('access_token')) {
       window.location.replace(`/reset-password${window.location.hash}`);
-      return;
     }
-
-    const activityMap = new Map(activities.map((activity) => [activity.date, activity.count]));
-    const initialGrid = Array.from({ length: 70 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (69 - i));
-      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      const count = activityMap.get(dateStr) || 0;
-      const level = count >= 6 ? 4 : count >= 4 ? 3 : count >= 2 ? 2 : count >= 1 ? 1 : 0;
-      return { day: i + 1, count, level };
-    });
-    setStreakData(initialGrid);
-    setSelectedStreak(initialGrid[68] || null);
-  }, [activities]);
+  }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -612,7 +613,7 @@ export default function LandingPage({ user, tasks = [], activities = [], current
                     <button
                       key={cell.day}
                       type="button"
-                      onClick={() => setSelectedStreak(cell)}
+                      onClick={() => setSelectedStreakDay(cell.day - 1)}
                       aria-label={`Hari ke-${cell.day}: ${cell.count} tugas selesai`}
                       className="streak-cell cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ff7a2f]"
                       style={{ background: streakLevels[cell.level] }}

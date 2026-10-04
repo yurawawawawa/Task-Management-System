@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatIndonesianDate } from '@/app/lib/streaks';
+import { getAchievementProgress } from '@/app/lib/achievements';
 
 interface ActivityDay {
   date: string; // YYYY-MM-DD
@@ -158,48 +159,7 @@ export default function ProductivityClient({
     }
   });
 
-  const achievements = [
-    {
-      id: 'a1',
-      title: 'Penyulut Api',
-      target: '3 Hari berturut-turut',
-      unlocked: currentStreak >= 3 || longestStreak >= 3,
-      progress: Math.min(100, Math.round((currentStreak / 3) * 100)),
-      desc: 'Langkah awal memulai rutinitas produktif harian',
-    },
-    {
-      id: 'a2',
-      title: 'Konsistensi Mingguan',
-      target: '7 Hari berturut-turut',
-      unlocked: currentStreak >= 7 || longestStreak >= 7,
-      progress: Math.min(100, Math.round((currentStreak / 7) * 100)),
-      desc: 'Menuntaskan satu pekan penuh tanpa jeda',
-    },
-    {
-      id: 'a3',
-      title: 'Momentum Kuat',
-      target: '14 Hari berturut-turut',
-      unlocked: currentStreak >= 14 || longestStreak >= 14,
-      progress: Math.min(100, Math.round((currentStreak / 14) * 100)),
-      desc: 'Membangun kebiasaan produktif yang kokoh',
-    },
-    {
-      id: 'a4',
-      title: 'Master Rutinitas',
-      target: '30 Hari berturut-turut',
-      unlocked: currentStreak >= 30 || longestStreak >= 30,
-      progress: Math.min(100, Math.round((currentStreak / 30) * 100)),
-      desc: 'Bulan emas produktivitas tak terhentikan',
-    },
-    {
-      id: 'a5',
-      title: 'Klub Seratus Hari',
-      target: '100 Hari berturut-turut',
-      unlocked: currentStreak >= 100 || longestStreak >= 100,
-      progress: Math.min(100, Math.round((currentStreak / 100) * 100)),
-      desc: 'Legenda konsistensi dan fokus tanpa kompromi',
-    },
-  ];
+  const achievements = getAchievementProgress(currentStreak, longestStreak);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">

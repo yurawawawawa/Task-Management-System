@@ -9,6 +9,7 @@ import {
   CalendarCheck2,
   TrendingUp,
   Settings,
+  FolderOpen,
   Sparkles,
   Snowflake,
   ArrowRight,
@@ -45,9 +46,16 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
   {
     href: '/dashboard/tasks',
     exact: false,
-    label: 'Tasks / Board',
+    label: 'Tasks',
     description: 'Papan Kanban personal',
     icon: Kanban,
+  },
+  {
+    href: '/dashboard/projects',
+    exact: false,
+    label: 'Projects & Workspace',
+    description: 'Kelola proyek dan target jangka panjang',
+    icon: FolderOpen,
   },
   {
     href: '/dashboard/habits',

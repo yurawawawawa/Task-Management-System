@@ -8,7 +8,8 @@ import { recordDailyActivity } from '@/app/lib/activity';
 export async function createPersonalTask(
   title: string,
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT' = 'MEDIUM',
-  description?: string
+  description?: string,
+  dueDate?: string | null
 ) {
   const user = await getAuthUser();
   if (!user) throw new Error('Unauthorized');
@@ -22,6 +23,7 @@ export async function createPersonalTask(
     description: description || null,
     status: 'TODO',
     priority,
+    dueDate: dueDate ? `${dueDate}T23:59:59.000Z` : null,
   });
 
   revalidatePath('/dashboard');

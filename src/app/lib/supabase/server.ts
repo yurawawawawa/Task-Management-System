@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -29,7 +30,21 @@ export async function createClient() {
 }
 
 // Utility untuk mengambil user yang sedang login dari sisi server
-export async function getAuthUser() {
+// React cache deduplicates auth lookups made by the dashboard layout and the
+// active page during the same server render. The session is still validated by
+// Supabase; this only avoids repeating the same network request in one render.
+export const getAuthUser = cache(async function getAuthUser() {
+  const cookieStore = await cookies();
+  const hasAuthCookie = cookieStore
+    .getAll()
+    .some(({ name }) => name.startsWith('sb-'));
+
+  // Avoid a network request for anonymous visitors. Without this guard every
+  // landing-page render waits for Supabase Auth even though no user can exist.
+  if (!hasAuthCookie) {
+    return null;
+  }
+
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   
@@ -38,4 +53,4 @@ export async function getAuthUser() {
   }
   
   return user;
-}
+});

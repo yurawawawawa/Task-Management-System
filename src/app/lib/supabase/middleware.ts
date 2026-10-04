@@ -6,6 +6,26 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
+  // Pengunjung tanpa session tidak perlu melakukan request jaringan ke
+  // Supabase. Ini menjaga landing page dan halaman auth tetap responsif saat
+  // Supabase sedang lambat atau tidak tersedia.
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some(({ name }) => name.startsWith('sb-'));
+
+  if (!hasAuthCookie) {
+    const pathname = request.nextUrl.pathname;
+
+    if (pathname.startsWith('/dashboard')) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      url.search = `?next=${encodeURIComponent(pathname + request.nextUrl.search)}`;
+      return NextResponse.redirect(url);
+    }
+
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -56,7 +76,15 @@ export async function updateSession(request: NextRequest) {
   // 2. Proteksi route /dashboard : kalau belum login, redirect balik ke /login
   if (pathname.startsWith('/dashboard')) {
     if (!user) {
-      return createRedirect('/login');
+      const nextPath = pathname + request.nextUrl.search;
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      url.search = `?next=${encodeURIComponent(nextPath)}`;
+      const redirectRes = NextResponse.redirect(url);
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectRes.cookies.set(cookie.name, cookie.value, cookie);
+      });
+      return redirectRes;
     }
     return supabaseResponse;
   }
