@@ -22,8 +22,33 @@ export async function POST(request: Request) {
       password,
     });
 
-    if (authError || !authData.user) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+    if (authError) {
+      console.error('Supabase login error:', {
+        name: authError.name,
+        message: authError.message,
+        status: authError.status,
+        code: authError.code,
+      });
+
+      // Supabase uses AuthRetryableFetchError/status 0 when its Auth service
+      // cannot be reached. This must not be shown as a credential error.
+      const isAuthServiceUnavailable =
+        authError.name === 'AuthRetryableFetchError' ||
+        authError.status === 0 ||
+        (authError.status !== undefined && authError.status >= 500);
+
+      if (isAuthServiceUnavailable) {
+        return NextResponse.json(
+          { error: 'Layanan login sedang tidak dapat dihubungi. Periksa koneksi internet lalu coba lagi.' },
+          { status: 503 }
+        );
+      }
+
+      return NextResponse.json({ error: 'Email atau password salah.' }, { status: 401 });
+    }
+
+    if (!authData.user) {
+      return NextResponse.json({ error: 'Email atau password salah.' }, { status: 401 });
     }
 
     // 3. Fetch user profile from database, or auto-create if missing

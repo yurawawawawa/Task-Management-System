@@ -34,6 +34,7 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [nextPath, setNextPath] = useState('/dashboard');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -41,6 +42,13 @@ export default function SignupPage() {
   // Pop-up Akun Sudah Terdaftar
   const [accountExistsPopup, setAccountExistsPopup] = useState(false);
   const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    const requestedNext = new URLSearchParams(window.location.search).get('next');
+    if (requestedNext?.startsWith('/')) {
+      setNextPath(requestedNext);
+    }
+  }, []);
 
   // Countdown timer saat pop-up akun sudah ada aktif
   useEffect(() => {
@@ -50,7 +58,7 @@ export default function SignupPage() {
         setCountdown((prev) => prev - 1);
       }, 1000);
     } else if (accountExistsPopup && countdown === 0) {
-      router.push(`/login?email=${encodeURIComponent(email)}&existing=true`);
+      router.push(`/login?email=${encodeURIComponent(email)}&existing=true&next=${encodeURIComponent(nextPath)}`);
     }
     return () => clearTimeout(timer);
   }, [accountExistsPopup, countdown, email, router]);
@@ -120,10 +128,10 @@ export default function SignupPage() {
       });
 
       if (loginRes.ok) {
-        router.push('/dashboard');
+        router.push(nextPath);
         router.refresh();
       } else {
-        router.push('/login?registered=true');
+        router.push(`/login?registered=true&next=${encodeURIComponent(nextPath)}`);
       }
     } catch (err: any) {
       setError(err.message);
@@ -140,7 +148,7 @@ export default function SignupPage() {
       const { error: signUpError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
         },
       });
 
@@ -154,7 +162,7 @@ export default function SignupPage() {
   };
 
   const handleImmediateLogin = () => {
-    router.push(`/login?email=${encodeURIComponent(email)}&existing=true`);
+    router.push(`/login?email=${encodeURIComponent(email)}&existing=true&next=${encodeURIComponent(nextPath)}`);
   };
 
   return (
@@ -338,7 +346,7 @@ export default function SignupPage() {
       <div className="mt-6 text-center text-xs font-bold text-[#1a2e1f]/80">
         Sudah punya akun?{' '}
         <Link
-          href="/login"
+          href={`/login${nextPath !== '/dashboard' ? `?next=${encodeURIComponent(nextPath)}` : ''}`}
           className="text-[#1a2e1f] font-black underline underline-offset-4 hover:text-[#2d6a3e] transition-colors"
         >
           Masuk di sini

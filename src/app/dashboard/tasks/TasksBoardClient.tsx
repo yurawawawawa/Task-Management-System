@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
+  CalendarDays,
   Kanban,
   Plus,
   CheckCircle2,
@@ -48,6 +49,7 @@ interface Task {
   status: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   createdAt: string;
+  dueDate?: string | null;
 }
 
 interface TasksBoardClientProps {
@@ -61,6 +63,64 @@ interface TaskCardViewProps {
   onDelete?: (id: string) => void;
   onMoveStatus?: (id: string, status: 'TODO' | 'IN_PROGRESS' | 'DONE') => void;
   dragHandleProps?: Record<string, any>;
+}
+
+function formatDueDate(dateValue: string) {
+  return new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(`${dateValue}T12:00:00`));
+}
+
+function DueDatePicker({
+  value,
+  onChange,
+  isRetro,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  isRetro: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const openPicker = () => {
+    const input = inputRef.current as (HTMLInputElement & { showPicker?: () => void }) | null;
+    if (!input) return;
+
+    if (input.showPicker) {
+      input.showPicker();
+    } else {
+      input.click();
+    }
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={openPicker}
+        className={`inline-flex min-w-[150px] items-center justify-center gap-2 rounded-xl px-3.5 py-2.5 text-xs font-black transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 ${
+          isRetro
+            ? 'border-[2.5px] border-[#1a2e1f] bg-white text-[#1a2e1f] hover:bg-[#fff9ed] focus:ring-[#ffc93c]'
+            : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 focus:ring-emerald-500'
+        }`}
+        aria-label={value ? `Deadline ${formatDueDate(value)}` : 'Pilih deadline'}
+      >
+        <CalendarDays className="h-4 w-4 shrink-0" />
+        <span>{value ? formatDueDate(value) : 'Pilih deadline'}</span>
+      </button>
+      <input
+        ref={inputRef}
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="sr-only"
+        tabIndex={-1}
+        aria-label="Tanggal deadline"
+      />
+    </div>
+  );
 }
 
 function TaskCardView({
@@ -187,6 +247,17 @@ function TaskCardView({
       >
         {task.title}
       </p>
+
+      {task.dueDate && (
+        <div
+          className={`inline-flex items-center gap-1.5 text-[11px] font-bold ${
+            isRetro ? 'text-[#1a2e1f]/70' : 'text-slate-500'
+          }`}
+        >
+          <CalendarDays className="h-3.5 w-3.5" />
+          <span>{formatDueDate(task.dueDate.slice(0, 10))}</span>
+        </div>
+      )}
 
       {/* Manual Status Buttons */}
       {onMoveStatus && (
@@ -515,6 +586,7 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newPriority, setNewPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'>('MEDIUM');
+  const [newDueDate, setNewDueDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('ALL');
 
@@ -550,10 +622,11 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
     if (!newTitle.trim()) return;
 
     try {
-      const created = await createPersonalTask(newTitle, newPriority);
+      const created = await createPersonalTask(newTitle, newPriority, undefined, newDueDate || null);
       if (created) {
         setTasks((prev) => [created as any, ...prev]);
         setNewTitle('');
+        setNewDueDate('');
         setIsAdding(false);
       }
     } catch (err) {
@@ -727,7 +800,7 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
                   : 'text-slate-900 font-sans'
               }`}
             >
-              Tasks & Board
+              Tasks
             </h1>
             <p
               className={`text-sm sm:text-base mt-1.5 max-w-xl leading-relaxed ${
@@ -780,20 +853,23 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
                 }`}
                 autoFocus
               />
-              <select
-                value={newPriority}
-                onChange={(e) => setNewPriority(e.target.value as any)}
-                className={`px-3.5 py-2.5 rounded-xl text-xs font-black focus:outline-none ${
-                  isRetro
-                    ? 'bg-white border-[2.5px] border-[#1a2e1f] text-[#1a2e1f]'
-                    : 'bg-white border border-slate-200 text-slate-800'
-                }`}
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="URGENT">Urgent</option>
-              </select>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <DueDatePicker value={newDueDate} onChange={setNewDueDate} isRetro={isRetro} />
+                <select
+                  value={newPriority}
+                  onChange={(e) => setNewPriority(e.target.value as any)}
+                  className={`px-3.5 py-2.5 rounded-xl text-xs font-black focus:outline-none ${
+                    isRetro
+                      ? 'bg-white border-[2.5px] border-[#1a2e1f] text-[#1a2e1f]'
+                      : 'bg-white border border-slate-200 text-slate-800'
+                  }`}
+                >
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                  <option value="URGENT">Urgent</option>
+                </select>
+              </div>
             </div>
             <div className="flex items-center justify-end gap-2.5 pt-1">
               <button

@@ -37,6 +37,8 @@ function LoginForm() {
   const oauthError = searchParams.get('error');
   const emailParam = searchParams.get('email') || '';
   const existingParam = searchParams.get('existing') === 'true';
+  const requestedNext = searchParams.get('next') || '/dashboard';
+  const nextPath = requestedNext.startsWith('/') ? requestedNext : '/dashboard';
 
   const passwordParam = searchParams.get('password') || '';
   const [email, setEmail] = useState(emailParam);
@@ -100,8 +102,8 @@ function LoginForm() {
         throw new Error(data.error || 'Email atau password salah');
       }
 
-      // Gunakan window.location.href untuk hard redirect ke /dashboard dengan cookie sesi baru
-      window.location.href = '/dashboard';
+      // Gunakan hard redirect supaya cookie sesi baru langsung terbaca middleware.
+      window.location.href = nextPath;
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -148,7 +150,7 @@ function LoginForm() {
       const { error: signInError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
         },
       });
 
@@ -319,7 +321,7 @@ function LoginForm() {
       <div className="mt-6 text-center text-xs font-bold text-[#1a2e1f]/80">
         Belum punya akun?{' '}
         <Link
-          href="/signup"
+          href={`/signup${nextPath !== '/dashboard' ? `?next=${encodeURIComponent(nextPath)}` : ''}`}
           className="text-[#1a2e1f] font-black underline underline-offset-4 hover:text-[#2d6a3e] transition-colors"
         >
           Daftar akun gratis

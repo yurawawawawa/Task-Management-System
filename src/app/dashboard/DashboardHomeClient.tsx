@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -11,12 +11,18 @@ import {
   ArrowRight,
   TrendingUp,
   CalendarCheck2,
+  CalendarDays,
   Sparkles,
   Snowflake,
   Kanban,
-  Target
+  Target,
+  Trophy,
+  Zap,
+  Star,
 } from 'lucide-react';
 import { updateTaskStatus, createPersonalTask } from './actions';
+import DeadlineCalendar from './DeadlineCalendar';
+import type { Achievement } from '@/app/lib/achievements';
 
 interface TaskItem {
   id: string;
@@ -25,6 +31,7 @@ interface TaskItem {
   status: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   createdAt: string;
+  dueDate?: string | null;
 }
 
 interface ActivityItem {
@@ -40,7 +47,69 @@ interface DashboardHomeClientProps {
   weeklyCompletionRate: number;
   totalWeeklyTasks: number;
   completedWeeklyTasks: number;
+  unlockedAchievements: Achievement[];
   activities: ActivityItem[];
+}
+
+function AchievementIcon({ icon }: { icon: Achievement['icon'] }) {
+  if (icon === 'flame') return <Flame className="h-3.5 w-3.5" />;
+  if (icon === 'sparkles') return <Sparkles className="h-3.5 w-3.5" />;
+  if (icon === 'zap') return <Zap className="h-3.5 w-3.5" />;
+  if (icon === 'star') return <Star className="h-3.5 w-3.5" />;
+  return <Trophy className="h-3.5 w-3.5" />;
+}
+
+function formatTaskDeadline(dateValue: string) {
+  return new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(`${dateValue}T12:00:00`));
+}
+
+function TaskDeadlinePicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const openPicker = () => {
+    const input = inputRef.current as (HTMLInputElement & { showPicker?: () => void }) | null;
+    if (!input) return;
+
+    if (input.showPicker) {
+      input.showPicker();
+    } else {
+      input.click();
+    }
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={openPicker}
+        className="inline-flex min-w-[142px] items-center justify-center gap-2 rounded-2xl border-2 border-border/80 bg-muted/60 px-3 py-2.5 text-xs font-bold text-foreground transition-colors hover:border-primary focus:outline-none focus:border-primary"
+        aria-label={value ? `Deadline ${formatTaskDeadline(value)}` : 'Set deadline'}
+      >
+        <CalendarDays className="h-4 w-4 shrink-0 text-primary" />
+        <span>{value ? formatTaskDeadline(value) : 'Set deadline'}</span>
+      </button>
+      <input
+        ref={inputRef}
+        id="dashboard-task-due-date"
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="sr-only"
+        tabIndex={-1}
+        aria-label="Tanggal deadline"
+      />
+    </div>
+  );
 }
 
 export default function DashboardHomeClient({
@@ -51,12 +120,14 @@ export default function DashboardHomeClient({
   weeklyCompletionRate,
   totalWeeklyTasks,
   completedWeeklyTasks,
+  unlockedAchievements,
   activities,
 }: DashboardHomeClientProps) {
   const router = useRouter();
   const [tasks, setTasks] = useState<TaskItem[]>(initialTasks);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskPriority, setNewTaskPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'>('MEDIUM');
+  const [newTaskDueDate, setNewTaskDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'DONE'>('ALL');
 
@@ -91,10 +162,11 @@ export default function DashboardHomeClient({
 
     setIsSubmitting(true);
     try {
-      const created = await createPersonalTask(newTaskTitle, newTaskPriority);
+      const created = await createPersonalTask(newTaskTitle, newTaskPriority, undefined, newTaskDueDate || null);
       if (created) {
         setTasks((prev) => [created as any, ...prev]);
         setNewTaskTitle('');
+        setNewTaskDueDate('');
         router.refresh();
       }
     } catch (err) {
@@ -122,6 +194,26 @@ export default function DashboardHomeClient({
           <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
             Halo, {userName || 'Kawan'}!
           </h1>
+          {unlockedAchievements.length > 0 && (
+            <div className="mt-2.5 flex items-center gap-1.5" aria-label="Achievement yang telah terbuka">
+              <span className="mr-1 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                Achievement
+              </span>
+              {unlockedAchievements.map((achievement) => (
+                <span key={achievement.id} className="group relative">
+                  <span
+                    className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-amber-300 bg-amber-50 text-[#ff7a2f] shadow-2xs transition-transform group-hover:-translate-y-0.5"
+                    aria-label={achievement.title}
+                  >
+                    <AchievementIcon icon={achievement.icon} />
+                  </span>
+                  <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-max max-w-48 -translate-x-1/2 rounded-lg bg-slate-900 px-2.5 py-1.5 text-[10px] font-bold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                    {achievement.title}
+                  </span>
+                </span>
+              ))}
+            </div>
+          )}
           <p className="text-muted-foreground text-sm mt-1 max-w-xl">
             Lanjutkan momentum produktifmu hari ini. Setiap task dan habit kecil yang kamu selesaikan akan menjaga api streak tetap berkobar!
           </p>
@@ -215,6 +307,8 @@ export default function DashboardHomeClient({
         </div>
       </div>
 
+      <DeadlineCalendar tasks={tasks} />
+
       {/* Main Content Split: Tasks Hari Ini & Habits Checklist */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column (2 Cols): Task Hari Ini Management */}
@@ -270,7 +364,7 @@ export default function DashboardHomeClient({
             </div>
 
             {/* Quick Add Task Input */}
-            <form onSubmit={handleCreateTask} className="mt-4 flex flex-col sm:flex-row gap-2.5">
+            <form onSubmit={handleCreateTask} className="mt-4 flex flex-col lg:flex-row gap-2.5">
               <input
                 type="text"
                 value={newTaskTitle}
@@ -278,7 +372,8 @@ export default function DashboardHomeClient({
                 placeholder="Tambah task baru untuk hari ini..."
                 className="flex-1 px-4 py-2.5 bg-muted/60 border-2 border-border/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-primary focus:bg-white transition-all placeholder:text-muted-foreground/70"
               />
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <TaskDeadlinePicker value={newTaskDueDate} onChange={setNewTaskDueDate} />
                 <select
                   value={newTaskPriority}
                   onChange={(e) => setNewTaskPriority(e.target.value as any)}
@@ -376,7 +471,7 @@ export default function DashboardHomeClient({
                 href="/dashboard/tasks"
                 className="inline-flex items-center gap-1 font-black text-primary hover:underline underline-offset-4"
               >
-                <span>Buka Tasks & Board</span>
+                <span>Buka Tasks</span>
                 <Kanban className="w-3.5 h-3.5" />
               </Link>
             </div>

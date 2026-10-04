@@ -20,6 +20,10 @@
       "model": "Profile",
       "namespace": "public"
     },
+    "project_invites": {
+      "model": "ProjectInvite",
+      "namespace": "public"
+    },
     "project_members": {
       "model": "ProjectMember",
       "namespace": "public"
@@ -558,6 +562,21 @@
               }
             },
             "relations": {
+              "invites": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "projectId"
+                  ]
+                },
+                "to": {
+                  "model": "ProjectInvite",
+                  "namespace": "public"
+                }
+              },
               "members": {
                 "cardinality": "1:N",
                 "on": {
@@ -628,6 +647,104 @@
               },
               "namespaceId": "public",
               "table": "projects"
+            }
+          },
+          "ProjectInvite": {
+            "fields": {
+              "acceptedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "projectId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "tokenHash": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "project": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "projectId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Project",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "acceptedAt": {
+                  "column": "accepted_at"
+                },
+                "createdAt": {
+                  "column": "created_at"
+                },
+                "email": {
+                  "column": "email"
+                },
+                "expiresAt": {
+                  "column": "expires_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "projectId": {
+                  "column": "project_id"
+                },
+                "tokenHash": {
+                  "column": "token_hash"
+                }
+              },
+              "namespaceId": "public",
+              "table": "project_invites"
             }
           },
           "ProjectMember": {
@@ -934,6 +1051,11 @@
               "kind": "rls",
               "namespaceId": "public",
               "tableName": "profiles"
+            },
+            "project_invites": {
+              "kind": "rls",
+              "namespaceId": "public",
+              "tableName": "project_invites"
             },
             "project_members": {
               "kind": "rls",
@@ -1262,6 +1384,102 @@
                 {
                   "columns": [
                     "email"
+                  ]
+                }
+              ]
+            },
+            "project_invites": {
+              "columns": {
+                "accepted_at": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "created_at": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "expires_at": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "project_id": {
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
+                  "nullable": false
+                },
+                "token_hash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "project_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "project_invites"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "projects"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "email"
+                  ],
+                  "name": "project_invites_email_idx_46df9cad",
+                  "prefix": "project_invites_email_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "project_id"
+                  ],
+                  "name": "project_invites_project_id_idx_6ad92603",
+                  "prefix": "project_invites_project_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "token_hash"
                   ]
                 }
               ]
@@ -1667,10 +1885,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "75751bdc4b3802588313742cc7b5671dd4acf80049423a305df0a4a04a4b1892"
+    "storageHash": "350ac05b6d7dd6286c2c7456ac1f8b4cbc7d9a5fd0bd1b0791412e6f5ad3656e"
   },
   "execution": {
-    "executionHash": "12fe9af977b1ec2203a36f67fa2470c61bd6697d63700598d584482d6b765942",
+    "executionHash": "24bbb41e77bd81b6c61cd1884bbef30e4b811ed97d5c8c1f9e7d04735083d232",
     "mutations": {
       "defaults": [
         {
@@ -1749,6 +1967,17 @@
             "column": "updated_at",
             "namespace": "public",
             "table": "profiles"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "project_invites"
           }
         },
         {

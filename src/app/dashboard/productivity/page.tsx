@@ -11,14 +11,12 @@ export default async function ProductivityMapPage() {
     redirect('/login');
   }
 
-  // Fetch productivity stats and daily activity records with freeze calculation
-  const stats = await getUserProductivityStats(user.id);
-
-  // Fetch completed tasks for user to account for any tasks not yet logged in daily_activities
-  const completedTasks = await db.orm.public.Task.where({
-    userId: user.id,
-    status: 'DONE',
-  }).all();
+  // These reads are independent and can run together while the stats helper
+  // itself is request-cached for the dashboard layout.
+  const [stats, completedTasks] = await Promise.all([
+    getUserProductivityStats(user.id),
+    db.orm.public.Task.where({ userId: user.id, status: 'DONE' }).all(),
+  ]);
 
   const countsByDate = new Map<string, number>();
 
