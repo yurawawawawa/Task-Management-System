@@ -330,7 +330,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                     </button>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-100 space-y-3">
+                  <div className="pt-3 border-t border-slate-100">
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <label className="text-xs font-black block mb-1 text-slate-700">
@@ -363,30 +363,6 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                             <Sun className="h-3 w-3 text-amber-500" />
                           )}
                         </span>
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setColorMode('light')}
-                        className={`inline-flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2 text-xs font-black transition-all ${
-                          colorMode === 'light'
-                            ? 'border-blue-600 bg-blue-50/70 text-blue-950 ring-2 ring-blue-500/30'
-                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                        }`}
-                      >
-                        <Sun className="h-3.5 w-3.5" /> Terang
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setColorMode('dark')}
-                        className={`inline-flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2 text-xs font-black transition-all ${
-                          colorMode === 'dark'
-                            ? 'border-blue-600 bg-blue-50/70 text-blue-950 ring-2 ring-blue-500/30'
-                            : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                        }`}
-                      >
-                        <Moon className="h-3.5 w-3.5" /> Gelap
                       </button>
                     </div>
                   </div>
