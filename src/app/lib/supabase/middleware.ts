@@ -1,5 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { getSupabasePublicConfig } from './config';
+
+const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabasePublicConfig();
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -26,10 +29,16 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
+  const secureCookies = process.env.NODE_ENV === 'production';
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
+      cookieOptions: {
+        path: '/',
+        sameSite: 'lax',
+        secure: secureCookies,
+      },
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -40,7 +49,12 @@ export async function updateSession(request: NextRequest) {
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              path: '/',
+              sameSite: 'lax',
+              secure: secureCookies,
+            })
           );
         },
       },
@@ -50,7 +64,17 @@ export async function updateSession(request: NextRequest) {
   // Refresh token & retrieve auth user
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
+
+  if (authError) {
+    console.error('Supabase middleware session lookup failed:', {
+      name: authError.name,
+      message: authError.message,
+      status: authError.status,
+      code: authError.code,
+    });
+  }
 
   const pathname = request.nextUrl.pathname;
 

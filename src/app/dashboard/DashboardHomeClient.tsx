@@ -23,6 +23,8 @@ import {
 import { updateTaskStatus, createPersonalTask } from './actions';
 import DeadlineCalendar from './DeadlineCalendar';
 import type { Achievement } from '@/app/lib/achievements';
+import TreklySelect from '@/app/components/TreklySelect';
+import { TREKLY_PRIORITY_OPTIONS } from '@/app/components/treklySelectOptions';
 
 interface TaskItem {
   id: string;
@@ -38,6 +40,8 @@ interface ActivityItem {
   date: string;
   count: number;
 }
+
+const PRIORITY_OPTIONS = TREKLY_PRIORITY_OPTIONS;
 
 interface DashboardHomeClientProps {
   userName: string;
@@ -374,16 +378,14 @@ export default function DashboardHomeClient({
               />
               <div className="flex flex-col sm:flex-row gap-2">
                 <TaskDeadlinePicker value={newTaskDueDate} onChange={setNewTaskDueDate} />
-                <select
+                <TreklySelect
                   value={newTaskPriority}
-                  onChange={(e) => setNewTaskPriority(e.target.value as any)}
-                  className="px-3 py-2.5 bg-muted/60 border-2 border-border/80 rounded-2xl text-xs font-black focus:outline-none focus:border-primary"
-                >
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                  <option value="URGENT">Urgent</option>
-                </select>
+                  onChange={setNewTaskPriority}
+                  options={PRIORITY_OPTIONS}
+                  variant="priority"
+                  ariaLabel="Task priority"
+                  className="min-w-[132px] flex-1 sm:flex-none"
+                />
                 <button
                   type="submit"
                   disabled={isSubmitting || !newTaskTitle.trim()}

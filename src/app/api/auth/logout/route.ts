@@ -1,7 +1,8 @@
+import { withApiTelemetry } from '@/app/lib/admin/telemetry';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/app/lib/supabase/server';
 
-export async function POST() {
+async function handlePOST() {
   try {
     const supabase = await createClient();
     
@@ -18,3 +19,5 @@ export async function POST() {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const POST = withApiTelemetry('auth.logout.POST', handlePOST);

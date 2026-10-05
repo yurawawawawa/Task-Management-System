@@ -1,7 +1,9 @@
+import { withApiTelemetry } from '@/app/lib/admin/telemetry';
 import { NextResponse } from 'next/server';
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
 import { updateProjectSchema } from '@/app/lib/validations/project';
+import { recordActivity } from '@/app/lib/admin/telemetry';
 
 // Helper function untuk memverifikasi ownership project
 async function getProjectIfOwner(projectId: string, userId: string) {
@@ -12,7 +14,7 @@ async function getProjectIfOwner(projectId: string, userId: string) {
 }
 
 // GET: Ambil detail satu project
-export async function GET(
+async function handleGET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -38,7 +40,7 @@ export async function GET(
 }
 
 // PATCH: Update project
-export async function PATCH(
+async function handlePATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -63,6 +65,9 @@ export async function PATCH(
     if (result.data.description !== undefined) updateData.description = result.data.description;
 
     const updatedProject = await db.orm.public.Project.where({ id }).update(updateData);
+    if (Object.entries(result.data).some(([key, value]) => value !== undefined && project[key as keyof typeof project] !== value)) {
+      await recordActivity(user.id, 'PROJECT_UPDATED', 'project', id);
+    }
 
     return NextResponse.json({ message: 'Project updated successfully', project: updatedProject });
   } catch (error: any) {
@@ -72,7 +77,7 @@ export async function PATCH(
 }
 
 // DELETE: Hapus project (Otomatis menghapus tasks di dalamnya karena Cascade setup di Prisma)
-export async function DELETE(
+async function handleDELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -86,6 +91,7 @@ export async function DELETE(
     if (project === false) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     await db.orm.public.Project.where({ id }).delete();
+    await recordActivity(user.id, 'PROJECT_DELETED', 'project', id);
 
     return NextResponse.json({ message: 'Project and all associated tasks deleted successfully' });
   } catch (error: any) {
@@ -93,3 +99,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const GET = withApiTelemetry('projects.[id].GET', handleGET);
+export const PATCH = withApiTelemetry('projects.[id].PATCH', handlePATCH);
+export const DELETE = withApiTelemetry('projects.[id].DELETE', handleDELETE);

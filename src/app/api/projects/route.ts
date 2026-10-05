@@ -1,10 +1,12 @@
+import { withApiTelemetry } from '@/app/lib/admin/telemetry';
 import { NextResponse } from 'next/server';
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
 import { createProjectSchema } from '@/app/lib/validations/project';
+import { recordActivity } from '@/app/lib/admin/telemetry';
 
 // GET: Ambil semua project milik user yang sedang login
-export async function GET() {
+async function handleGET() {
   try {
     const user = await getAuthUser();
     if (!user) {
@@ -24,7 +26,7 @@ export async function GET() {
 }
 
 // POST: Buat project baru
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   try {
     const user = await getAuthUser();
     if (!user) {
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
       name,
       description,
     });
+    await recordActivity(user.id, 'PROJECT_CREATED', 'project', project.id);
 
     return NextResponse.json(
       { message: 'Project created successfully', project },
@@ -54,3 +57,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const GET = withApiTelemetry('projects.GET', handleGET);
+export const POST = withApiTelemetry('projects.POST', handlePOST);

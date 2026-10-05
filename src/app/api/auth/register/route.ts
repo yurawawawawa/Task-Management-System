@@ -1,9 +1,10 @@
+import { withApiTelemetry } from '@/app/lib/admin/telemetry';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/app/lib/supabase/server';
 import { registerSchema } from '@/app/lib/validations/auth';
 import { db } from '@/prisma/db';
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   try {
     const body = await request.json();
     
@@ -120,3 +121,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const POST = withApiTelemetry('auth.register.POST', handlePOST);

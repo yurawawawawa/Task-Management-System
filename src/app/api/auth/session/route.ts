@@ -1,8 +1,9 @@
+import { withApiTelemetry } from '@/app/lib/admin/telemetry';
 import { NextResponse } from 'next/server';
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
 
-export async function GET() {
+async function handleGET() {
   try {
     // 1. Dapatkan user dari cookie session
     const authUser = await getAuthUser();
@@ -26,3 +27,5 @@ export async function GET() {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const GET = withApiTelemetry('auth.session.GET', handleGET);

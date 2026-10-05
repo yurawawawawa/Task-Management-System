@@ -18,6 +18,7 @@ import {
   Sun,
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
+import TreklySelect from '@/app/components/TreklySelect';
 
 interface SettingsClientProps {
   user: {
@@ -26,6 +27,12 @@ interface SettingsClientProps {
     name?: string;
   };
 }
+
+const TIMEZONE_OPTIONS = [
+  { value: 'Asia/Jakarta (WIB GMT+7)', label: 'Asia/Jakarta (WIB GMT+7)' },
+  { value: 'Asia/Makassar (WITA GMT+8)', label: 'Asia/Makassar (WITA GMT+8)' },
+  { value: 'Asia/Jayapura (WIT GMT+9)', label: 'Asia/Jayapura (WIT GMT+9)' },
+];
 
 export default function SettingsClient({ user }: SettingsClientProps) {
   const { themeStyle, accentColor, colorMode, setThemeStyle, setAccentColor, setColorMode } = useTheme();
@@ -451,19 +458,13 @@ export default function SettingsClient({ user }: SettingsClientProps) {
                 <label className="text-xs font-bold text-muted-foreground block mb-1">
                   Zona Waktu
                 </label>
-                <select
+                <TreklySelect
                   value={timezone}
-                  onChange={(e) => setTimezone(e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-xl text-xs font-black focus:outline-none ${
-                    isRetro
-                      ? 'bg-white border-[2.5px] border-[#1a2e1f] text-[#1a2e1f]'
-                      : 'bg-muted/40 border-2 border-border focus:border-primary'
-                  }`}
-                >
-                  <option value="Asia/Jakarta (WIB GMT+7)">Asia/Jakarta (WIB GMT+7)</option>
-                  <option value="Asia/Makassar (WITA GMT+8)">Asia/Makassar (WITA GMT+8)</option>
-                  <option value="Asia/Jayapura (WIT GMT+9)">Asia/Jayapura (WIT GMT+9)</option>
-                </select>
+                  onChange={setTimezone}
+                  options={TIMEZONE_OPTIONS}
+                  ariaLabel="Zona waktu"
+                  className="w-full"
+                />
                 <span className="text-[11px] text-muted-foreground mt-1 block">
                   Digunakan untuk batas perhitungan pergantian hari streak (pukul 00:00 lokal)
                 </span>

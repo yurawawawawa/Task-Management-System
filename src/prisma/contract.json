@@ -1031,6 +1031,57 @@
     "namespaces": {
       "public": {
         "entries": {
+          "policy": {
+            "Project_owners_can_create_project_invites": {
+              "kind": "policy",
+              "name": "Project owners can create project invites",
+              "namespaceId": "public",
+              "operation": "insert",
+              "permissive": true,
+              "roles": [
+                "authenticated"
+              ],
+              "tableName": "project_invites",
+              "withCheck": "(EXISTS ( SELECT 1\n   FROM projects\n  WHERE ((projects.id = project_invites.project_id) AND (projects.user_id = auth.uid()))))"
+            },
+            "Project_owners_can_delete_project_invites": {
+              "kind": "policy",
+              "name": "Project owners can delete project invites",
+              "namespaceId": "public",
+              "operation": "delete",
+              "permissive": true,
+              "roles": [
+                "authenticated"
+              ],
+              "tableName": "project_invites",
+              "using": "(EXISTS ( SELECT 1\n   FROM projects\n  WHERE ((projects.id = project_invites.project_id) AND (projects.user_id = auth.uid()))))"
+            },
+            "Project_owners_can_update_project_invites": {
+              "kind": "policy",
+              "name": "Project owners can update project invites",
+              "namespaceId": "public",
+              "operation": "update",
+              "permissive": true,
+              "roles": [
+                "authenticated"
+              ],
+              "tableName": "project_invites",
+              "using": "(EXISTS ( SELECT 1\n   FROM projects\n  WHERE ((projects.id = project_invites.project_id) AND (projects.user_id = auth.uid()))))",
+              "withCheck": "(EXISTS ( SELECT 1\n   FROM projects\n  WHERE ((projects.id = project_invites.project_id) AND (projects.user_id = auth.uid()))))"
+            },
+            "Project_owners_can_view_project_invites": {
+              "kind": "policy",
+              "name": "Project owners can view project invites",
+              "namespaceId": "public",
+              "operation": "select",
+              "permissive": true,
+              "roles": [
+                "authenticated"
+              ],
+              "tableName": "project_invites",
+              "using": "(EXISTS ( SELECT 1\n   FROM projects\n  WHERE ((projects.id = project_invites.project_id) AND (projects.user_id = auth.uid()))))"
+            }
+          },
           "rls": {
             "daily_activities": {
               "kind": "rls",
@@ -1412,7 +1463,7 @@
                 "expires_at": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
-                    "expression": "now()",
+                    "expression": "(now() + '7 days'::interval)",
                     "kind": "function"
                   },
                   "nativeType": "timestamptz",
@@ -1420,6 +1471,10 @@
                 },
                 "id": {
                   "codecId": "pg/uuid@1",
+                  "default": {
+                    "expression": "gen_random_uuid()",
+                    "kind": "function"
+                  },
                   "nativeType": "uuid",
                   "nullable": false
                 },
@@ -1455,19 +1510,16 @@
               ],
               "indexes": [
                 {
-                  "columns": [
-                    "email"
-                  ],
-                  "name": "project_invites_email_idx_46df9cad",
-                  "prefix": "project_invites_email_idx",
-                  "unique": false
+                  "expression": "lower(email)",
+                  "name": "project_invites_email_idx",
+                  "unique": false,
+                  "where": "(email IS NOT NULL)"
                 },
                 {
                   "columns": [
                     "project_id"
                   ],
-                  "name": "project_invites_project_id_idx_6ad92603",
-                  "prefix": "project_invites_project_id_idx",
+                  "name": "project_invites_project_id_idx",
                   "unique": false
                 }
               ],
@@ -1885,10 +1937,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "350ac05b6d7dd6286c2c7456ac1f8b4cbc7d9a5fd0bd1b0791412e6f5ad3656e"
+    "storageHash": "1ca555656448d788b09abec2822e50656bf173242ac145b1aa677176dcabad66"
   },
   "execution": {
-    "executionHash": "24bbb41e77bd81b6c61cd1884bbef30e4b811ed97d5c8c1f9e7d04735083d232",
+    "executionHash": "12fe9af977b1ec2203a36f67fa2470c61bd6697d63700598d584482d6b765942",
     "mutations": {
       "defaults": [
         {
@@ -1967,17 +2019,6 @@
             "column": "updated_at",
             "namespace": "public",
             "table": "profiles"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "uuidv4",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "project_invites"
           }
         },
         {

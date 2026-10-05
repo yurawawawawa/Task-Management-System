@@ -1,9 +1,13 @@
-import 'dotenv/config';
 import postgres from '@prisma/orm-postgres/runtime';
 import type { Contract } from './contract.d';
 import contractJson from './contract.json' with { type: 'json' };
+import { requireServerEnv } from '@/app/lib/runtime-env';
 
 export const db = postgres<Contract>({
   contractJson,
-  url: process.env['DATABASE_URL']!,
+  url: requireServerEnv('DATABASE_URL'),
+  poolOptions: {
+    connectionTimeoutMillis: 20_000,
+    idleTimeoutMillis: 30_000,
+  },
 });

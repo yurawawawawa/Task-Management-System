@@ -1,9 +1,41 @@
+import { withApiTelemetry } from '@/app/lib/admin/telemetry';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/app/lib/supabase/server';
 import { loginSchema } from '@/app/lib/validations/auth';
 import { db } from '@/prisma/db';
+import { recordActivity } from '@/app/lib/admin/telemetry';
 
-export async function POST(request: Request) {
+function getErrorDetails(error: unknown) {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message };
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    const value = error as Record<string, unknown>;
+    return {
+      name: typeof value.name === 'string' ? value.name : 'UnknownError',
+      message: typeof value.message === 'string' ? value.message : 'Unknown error',
+      code: typeof value.code === 'string' ? value.code : undefined,
+    };
+  }
+
+  return { name: 'UnknownError', message: 'Unknown error' };
+}
+
+function isDatabaseError(error: unknown) {
+  const details = getErrorDetails(error);
+  const message = details.message.toLowerCase();
+  return (
+    message.includes('database') ||
+    message.includes('postgres') ||
+    message.includes('connection') ||
+    message.includes('contract') ||
+    message.includes('prisma') ||
+    details.name.toLowerCase().includes('database')
+  );
+}
+
+async function handlePOST(request: Request) {
   try {
     const body = await request.json();
     
@@ -12,7 +44,8 @@ export async function POST(request: Request) {
     if (!result.success) {
       return NextResponse.json({ error: 'Validation failed', details: result.error.issues }, { status: 400 });
     }
-    const { email, password } = result.data;
+    const email = result.data.email.trim().toLowerCase();
+    const { password } = result.data;
 
     // 2. Authenticate with Supabase
     // This will automatically set the session cookie using our server client
@@ -44,37 +77,69 @@ export async function POST(request: Request) {
         );
       }
 
-      return NextResponse.json({ error: 'Email atau password salah.' }, { status: 401 });
+      const isCredentialError = [400, 401, 422].includes(authError.status ?? 0);
+
+      if (isCredentialError) {
+        return NextResponse.json({ error: 'Email atau password salah.' }, { status: 401 });
+      }
+
+      return NextResponse.json(
+        { error: 'Layanan autentikasi sedang bermasalah. Coba lagi beberapa saat lagi.' },
+        { status: 502 }
+      );
     }
 
     if (!authData.user) {
-      return NextResponse.json({ error: 'Email atau password salah.' }, { status: 401 });
+      console.error('Supabase login returned no user without an error.');
+      return NextResponse.json(
+        { error: 'Layanan autentikasi sedang bermasalah. Coba lagi beberapa saat lagi.' },
+        { status: 502 }
+      );
     }
 
     // 3. Fetch user profile from database, or auto-create if missing
-    let profile = await db.orm.public.Profile
-      .where({ id: authData.user.id })
-      .first();
+    try {
+      let profile = await db.orm.public.Profile
+        .where({ id: authData.user.id })
+        .first();
 
-    if (!profile) {
-      try {
+      if (!profile) {
         profile = await db.orm.public.Profile.create({
           id: authData.user.id,
-          email: authData.user.email!,
+          email: authData.user.email ?? email,
           name: authData.user.user_metadata?.name || authData.user.email?.split('@')[0] || 'User',
         });
-      } catch (e) {
-        console.error('Failed to auto-create missing profile during login:', e);
       }
+
+      await recordActivity(authData.user.id, 'USER_LOGIN', 'user', authData.user.id);
+      return NextResponse.json({
+        message: 'Logged in successfully',
+        user: profile,
+      });
+    } catch (error) {
+      console.error('Login profile sync failed:', getErrorDetails(error));
+      return NextResponse.json(
+        { error: 'Database login service sedang tidak tersedia.', code: 'DATABASE_UNAVAILABLE' },
+        { status: 503 }
+      );
     }
 
-    return NextResponse.json({ 
-      message: 'Logged in successfully',
-      user: profile 
-    });
+  } catch (error: unknown) {
+    const details = getErrorDetails(error);
+    console.error('Login request failed:', details);
 
-  } catch (error: any) {
-    console.error('Login error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    if (isDatabaseError(error)) {
+      return NextResponse.json(
+        { error: 'Database login service sedang tidak tersedia.', code: 'DATABASE_UNAVAILABLE' },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Konfigurasi atau layanan login sedang bermasalah.', code: 'AUTH_INTERNAL_ERROR' },
+      { status: 500 }
+    );
   }
 }
+
+export const POST = withApiTelemetry('auth.login.POST', handlePOST);

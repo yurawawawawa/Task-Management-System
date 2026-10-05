@@ -1,7 +1,8 @@
+import { withApiTelemetry } from '@/app/lib/admin/telemetry';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getAuthUser, createClient } from '@/app/lib/supabase/server';
 
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest) {
   try {
     const user = await getAuthUser();
     if (!user) {
@@ -42,3 +43,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const POST = withApiTelemetry('productivity.freeze.POST', handlePOST);

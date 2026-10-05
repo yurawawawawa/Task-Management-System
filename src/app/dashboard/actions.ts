@@ -4,6 +4,7 @@ import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
 import { revalidatePath } from 'next/cache';
 import { recordDailyActivity } from '@/app/lib/activity';
+import { recordActivity } from '@/app/lib/admin/telemetry';
 
 export async function createPersonalTask(
   title: string,
@@ -25,6 +26,7 @@ export async function createPersonalTask(
     priority,
     dueDate: dueDate ? `${dueDate}T23:59:59.000Z` : null,
   });
+  await recordActivity(user.id, 'TASK_CREATED', 'task', task.id);
 
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/tasks');
@@ -52,6 +54,9 @@ export async function updateTaskStatus(
   });
 
   // Automatically record daily activity when task is marked as DONE
+  if (oldTask && oldTask.status !== status) {
+    await recordActivity(user.id, status === 'DONE' ? 'TASK_COMPLETED' : 'TASK_UPDATED', 'task', taskId);
+  }
   if (oldTask && oldTask.status !== 'DONE' && status === 'DONE') {
     await recordDailyActivity(user.id, { type: 'task', action: 'increment' });
   } else if (oldTask && oldTask.status === 'DONE' && status !== 'DONE') {
@@ -91,6 +96,7 @@ export async function createHabit(title: string, category = 'Produktivitas', fre
     category: category.trim() || 'Produktivitas',
     frequency,
   });
+  await recordActivity(user.id, 'HABIT_CREATED', 'habit', habit.id);
 
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/habits');
@@ -117,9 +123,11 @@ export async function toggleHabitCompletion(habitId: string, date: string, compl
   const existing = await db.orm.public.HabitCompletion.where({ habitId, date }).first();
   if (completed && !existing) {
     await db.orm.public.HabitCompletion.create({ habitId, date });
+    await recordActivity(user.id, 'HABIT_COMPLETED', 'habit', habitId);
     await recordDailyActivity(user.id, { type: 'habit', action: 'increment', date });
   } else if (!completed && existing) {
     await db.orm.public.HabitCompletion.where({ id: existing.id }).delete();
+    await recordActivity(user.id, 'HABIT_UNCOMPLETED', 'habit', habitId);
     await recordDailyActivity(user.id, { type: 'habit', action: 'decrement', date });
   }
 

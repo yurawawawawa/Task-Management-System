@@ -1,7 +1,9 @@
+import { withApiTelemetry } from '@/app/lib/admin/telemetry';
 import { NextResponse } from 'next/server';
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
 import { updateTaskSchema } from '@/app/lib/validations/task';
+import { recordActivity } from '@/app/lib/admin/telemetry';
 
 async function getTaskIfOwner(taskId: string, userId: string) {
   const task = await db.orm.public.Task.where({ id: taskId }).first();
@@ -10,7 +12,7 @@ async function getTaskIfOwner(taskId: string, userId: string) {
   return task;
 }
 
-export async function GET(
+async function handleGET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -30,7 +32,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
+async function handlePATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -66,6 +68,9 @@ export async function PATCH(
     }
 
     const updatedTask = await db.orm.public.Task.where({ id }).update(updateData);
+    if (Object.entries(result.data).some(([key, value]) => value !== undefined && task[key as keyof typeof task] !== value)) {
+      await recordActivity(user.id, result.data.status === 'DONE' && task.status !== 'DONE' ? 'TASK_COMPLETED' : 'TASK_UPDATED', 'task', id);
+    }
 
     return NextResponse.json({ message: 'Task updated successfully', task: updatedTask });
   } catch (error: any) {
@@ -74,7 +79,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
+async function handleDELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -88,6 +93,7 @@ export async function DELETE(
     if (task === false) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     await db.orm.public.Task.where({ id }).delete();
+    await recordActivity(user.id, 'TASK_DELETED', 'task', id);
 
     return NextResponse.json({ message: 'Task deleted successfully' });
   } catch (error: any) {
@@ -95,3 +101,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const GET = withApiTelemetry('tasks.[id].GET', handleGET);
+export const PATCH = withApiTelemetry('tasks.[id].PATCH', handlePATCH);
+export const DELETE = withApiTelemetry('tasks.[id].DELETE', handleDELETE);

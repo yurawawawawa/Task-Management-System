@@ -5,12 +5,19 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CalendarCheck2, Flame, Plus, Check, Trash2, ArrowRight } from 'lucide-react';
 import { createHabit, deleteHabit, toggleHabitCompletion } from '../actions';
+import TreklySelect from '@/app/components/TreklySelect';
 
 interface HabitCompletion { id: string; date: string; }
 interface Habit { id: string; title: string; category: string; frequency: string; completions: HabitCompletion[]; }
 interface Task { id: string; title: string; status: string; updatedAt: string; }
 
 const WEEK_DAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+const HABIT_CATEGORY_OPTIONS = [
+  { value: 'Produktivitas', label: 'Produktivitas' },
+  { value: 'Kesehatan', label: 'Kesehatan' },
+  { value: 'Skill', label: 'Skill' },
+  { value: 'Mindset', label: 'Mindset' },
+];
 
 export default function HabitsClient({ habits: initialHabits, tasks, todayStr, currentStreak }: { habits: Habit[]; tasks: Task[]; todayStr: string; currentStreak: number }) {
   const router = useRouter();
@@ -109,7 +116,7 @@ export default function HabitsClient({ habits: initialHabits, tasks, todayStr, c
         </div>
       </div>
 
-      {isAdding && <form onSubmit={handleAdd} className="bg-white p-6 rounded-3xl border-2 border-border shadow-xs space-y-4"><div className="flex items-center justify-between"><h2 className="font-black text-foreground">Buat habit baru</h2><button type="button" onClick={() => setIsAdding(false)} className="text-xs font-bold text-muted-foreground">Tutup</button></div><div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><input value={newTitle} onChange={(event) => setNewTitle(event.target.value)} placeholder="Contoh: Baca buku 15 menit" className="w-full px-4 py-2.5 bg-muted/50 border-2 border-border rounded-xl text-sm font-medium focus:outline-none focus:border-primary" autoFocus /><select value={newCategory} onChange={(event) => setNewCategory(event.target.value)} className="w-full px-4 py-2.5 bg-muted/50 border-2 border-border rounded-xl text-xs font-black focus:outline-none focus:border-primary"><option>Produktivitas</option><option>Kesehatan</option><option>Skill</option><option>Mindset</option></select></div><div className="flex justify-end"><button type="submit" disabled={!newTitle.trim() || busyId === 'new'} className="px-5 py-2 rounded-xl text-xs font-black bg-primary text-primary-foreground disabled:opacity-50">Simpan Habit</button></div></form>}
+      {isAdding && <form onSubmit={handleAdd} className="bg-white p-6 rounded-3xl border-2 border-border shadow-xs space-y-4"><div className="flex items-center justify-between"><h2 className="font-black text-foreground">Buat habit baru</h2><button type="button" onClick={() => setIsAdding(false)} className="text-xs font-bold text-muted-foreground">Tutup</button></div><div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><input value={newTitle} onChange={(event) => setNewTitle(event.target.value)} placeholder="Contoh: Baca buku 15 menit" className="w-full px-4 py-2.5 bg-muted/50 border-2 border-border rounded-xl text-sm font-medium focus:outline-none focus:border-primary" autoFocus /><TreklySelect value={newCategory} onChange={setNewCategory} options={HABIT_CATEGORY_OPTIONS} ariaLabel="Kategori habit" className="w-full" /></div><div className="flex justify-end"><button type="submit" disabled={!newTitle.trim() || busyId === 'new'} className="px-5 py-2 rounded-xl text-xs font-black bg-primary text-primary-foreground disabled:opacity-50">Simpan Habit</button></div></form>}
 
       <div className="bg-white p-6 sm:p-8 rounded-3xl border-2 border-border shadow-xs overflow-x-auto">
         <div className="flex items-center justify-between pb-6 border-b border-border min-w-[600px]"><div><h2 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2"><CalendarCheck2 className="w-5 h-5 text-[#ff7a2f]" />Pelacak Mingguan</h2><p className="text-xs text-muted-foreground mt-0.5">Klik hari untuk menyimpan atau membatalkan completion.</p></div><span className="text-xs font-bold text-muted-foreground">{todayStr}</span></div>

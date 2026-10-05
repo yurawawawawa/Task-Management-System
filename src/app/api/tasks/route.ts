@@ -1,10 +1,12 @@
+import { withApiTelemetry } from '@/app/lib/admin/telemetry';
 import { NextResponse } from 'next/server';
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
 import { createTaskSchema } from '@/app/lib/validations/task';
+import { recordActivity } from '@/app/lib/admin/telemetry';
 
 // GET: Ambil semua task milik user yang sedang login (bisa difilter via Query Params)
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
   try {
     const user = await getAuthUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -52,7 +54,7 @@ export async function GET(request: Request) {
 }
 
 // POST: Buat task baru
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   try {
     const user = await getAuthUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -81,6 +83,7 @@ export async function POST(request: Request) {
       priority: priority || 'MEDIUM',
       dueDate: dueDate || null,
     });
+    await recordActivity(user.id, 'TASK_CREATED', 'task', task.id);
 
     return NextResponse.json(
       { message: 'Task created successfully', task },
@@ -91,3 +94,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const GET = withApiTelemetry('tasks.GET', handleGET);
+export const POST = withApiTelemetry('tasks.POST', handlePOST);

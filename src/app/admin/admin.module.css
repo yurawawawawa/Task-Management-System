@@ -1,0 +1,60 @@
+.shell { --foreground: #1a2e1f; --muted-foreground: #657267; min-height: 100vh; background: #f7f6f0; color: #1a2e1f; font-family: var(--theme-body-font, Arial, sans-serif); }
+.header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 32px; background: #173e21; color: #fffaf0; }
+.header > div:last-child { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-width: 0; }
+.header .badge { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.brand { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 900; }
+.brand small { display: block; color: #d7e4d3; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+.header a { color: #ffdb75; font-size: 14px; }
+.layout { display: grid; grid-template-columns: 220px minmax(0,1fr); max-width: 1600px; margin: auto; }
+.nav { padding: 28px 18px; border-right: 1px solid #dfe5d9; }
+.nav a { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; padding: 12px; border-radius: 12px; color: #446049; font-size: 14px; font-weight: 700; }
+.nav a:hover { background: #efeadc; }
+.nav a[aria-current=page] { background: #ffe6a5; color: #173e21; }
+.nav small { font-size: 10px; margin-left: auto; color: #6f756a; }
+.main { min-width: 0; padding: 32px; }
+.heading { display: flex; align-items: start; justify-content: space-between; gap: 18px; margin-bottom: 26px; }
+.heading h1 { font-size: clamp(24px,3vw,34px); font-weight: 900; letter-spacing: -.04em; }
+.heading p, .muted { color: #657267; font-size: 13px; line-height: 1.6; }
+.eyebrow { color: #7b693b; font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: .16em; margin-bottom: 7px; }
+.grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; margin-bottom: 24px; }
+.card { background: #fffef9; border: 1px solid #dce3d8; border-radius: 18px; padding: 20px; box-shadow: 0 2px 5px #173e2105; min-width: 0; }
+.card h3 { color: #637268; font-weight: 700; font-size: 12px; }
+.value { font-size: 32px; font-weight: 900; letter-spacing: -.04em; margin: 8px 0 4px; }
+.card small { display: block; font-size: 11px; color: #708072; line-height: 1.5; }
+.panel { background: #fffef9; border: 1px solid #dce3d8; border-radius: 20px; padding: 24px; margin-bottom: 24px; }
+.panel h2, .sectionTitle { font-weight: 800; font-size: 17px; margin-bottom: 14px; }
+.notice { border: 1px solid #ead7a4; border-radius: 14px; background: #fff4d8; padding: 14px 18px; font-size: 13px; line-height: 1.65; margin-bottom: 24px; }
+.columns { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
+.chart { height: 180px; display: flex; align-items: end; gap: 4px; border-bottom: 1px solid #dce3d8; padding-top: 20px; }
+.barSlot { height: 100%; flex: 1; display: flex; align-items: end; justify-content: center; gap: 1px; }
+.bar { width: 45%; background: #466f4d; border-radius: 3px 3px 0 0; min-height: 0; }
+.barAlt { background: #eeb455; }
+.chartLabels { display: flex; justify-content: space-between; font-size: 10px; color: #6b786d; margin-top: 8px; }
+.tableWrap { overflow-x: auto; }
+.table { border-collapse: collapse; width: 100%; font-size: 13px; text-align: left; }
+.table th { color: #657267; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 12px; white-space: nowrap; border-bottom: 1px solid #dce3d8; }
+.table td { padding: 15px 12px; border-bottom: 1px solid #eef0e9; vertical-align: top; }
+.table tbody tr:last-child td { border-bottom: 0; }
+.table a { color: #245c34; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+.table small { display: block; margin-top: 3px; font-size: 11px; color: #778279; }
+.badge { display: inline-flex; white-space: nowrap; background: #f0f2e9; color: #3b5841; font-size: 10px; font-weight: 800; padding: 4px 9px; border-radius: 20px; }
+.warning { background: #ffedcf; color: #825a20; }
+.danger { background: #fae5e1; color: #9a4139; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 16px; border: 1px solid #d5dece; border-radius: 12px; background: #fffdf7; font-size: 13px; font-weight: 800; cursor: pointer; }
+.button:hover { background: #fff0c8; }
+.button:disabled { opacity: .6; cursor: wait; }
+.shell :is(a, button, input, summary):focus-visible { outline: 3px solid #c99428; outline-offset: 3px; }
+.primary { background: #ffcf64; border-color: #ebbd52; }
+.filters { display: grid; grid-template-columns: 2fr repeat(3,1fr); gap: 12px; margin-bottom: 22px; }
+.filters label { display: block; font-size: 11px; font-weight: 700; }
+.filters label > span { display: block; margin-bottom: 6px; }
+.filters input { min-width: 0; width: 100%; border: 1px solid #bfcbb9; border-radius: 12px; padding: 11px 12px; background: #fffdf7; font-size: 14px; }
+.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 20px; font-size: 12px; }
+.empty { text-align: center; color: #687969; padding: 40px 16px; font-size: 14px; }
+.avatar { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #efe6cb; font-weight: 900; margin-right: 8px; }
+.details { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; font-size: 14px; }
+.details dt { font-size: 11px; color: #657267; margin-bottom: 4px; }
+.details dd { overflow-wrap: anywhere; font-weight: 700; }
+@media(max-width:1100px) { .grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .columns { grid-template-columns: 1fr; } .filters { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:760px) { .layout { display: block; } .nav { display: flex; overflow-x: auto; padding: 12px; border-bottom: 1px solid #dfe5d9; border-right: 0; } .nav a { flex-shrink: 0; margin: 0 4px; } .main { padding: 20px 14px; } .header { padding: 18px; } .header .muted { display: none; } .heading { flex-direction: column; } .panel { padding: 18px 12px; } .card { padding: 15px; } .value { font-size: 27px; } }
+@media(max-width:480px) { .filters, .details { grid-template-columns: 1fr; } }

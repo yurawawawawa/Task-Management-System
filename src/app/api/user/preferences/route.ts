@@ -1,7 +1,8 @@
+import { withApiTelemetry } from '@/app/lib/admin/telemetry';
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/app/lib/supabase/server';
 
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest) {
   try {
     const body = await request.json();
     const { themeStyle, accentColor, colorMode } = body;
@@ -67,3 +68,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const POST = withApiTelemetry('user.preferences.POST', handlePOST);
