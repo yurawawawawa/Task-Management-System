@@ -1,14 +1,22 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
+import { getSupabasePublicConfig } from './config';
 
 export async function createClient() {
   const cookieStore = await cookies();
+  const { url, anonKey } = getSupabasePublicConfig();
+  const secureCookies = process.env.NODE_ENV === 'production';
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
+      cookieOptions: {
+        path: '/',
+        sameSite: 'lax',
+        secure: secureCookies,
+      },
       cookies: {
         getAll() {
           return cookieStore.getAll();
@@ -16,9 +24,14 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
+              cookieStore.set(name, value, {
+                ...options,
+                path: '/',
+                sameSite: 'lax',
+                secure: secureCookies,
+              });
             });
-          } catch (error) {
+          } catch {
             // The `set` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
@@ -48,7 +61,17 @@ export const getAuthUser = cache(async function getAuthUser() {
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   
-  if (error || !user) {
+  if (error) {
+    console.error('Supabase session lookup failed:', {
+      name: error.name,
+      message: error.message,
+      status: error.status,
+      code: error.code,
+    });
+    return null;
+  }
+
+  if (!user) {
     return null;
   }
   

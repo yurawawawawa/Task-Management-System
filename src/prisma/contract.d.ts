@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'350ac05b6d7dd6286c2c7456ac1f8b4cbc7d9a5fd0bd1b0791412e6f5ad3656e'>;
+  StorageHashBase<'1ca555656448d788b09abec2822e50656bf173242ac145b1aa677176dcabad66'>;
 export type ExecutionHash =
-  ExecutionHashBase<'24bbb41e77bd81b6c61cd1884bbef30e4b811ed97d5c8c1f9e7d04735083d232'>;
+  ExecutionHashBase<'12fe9af977b1ec2203a36f67fa2470c61bd6697d63700598d584482d6b765942'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -905,6 +905,10 @@ type ContractBase = Omit<
                   readonly nativeType: 'uuid';
                   readonly codecId: 'pg/uuid@1';
                   readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'gen_random_uuid()';
+                  };
                 };
                 readonly project_id: {
                   readonly nativeType: 'uuid';
@@ -925,7 +929,10 @@ type ContractBase = Omit<
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
                   readonly nullable: false;
-                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: "(now() + '7 days'::interval)";
+                  };
                 };
                 readonly accepted_at: {
                   readonly nativeType: 'timestamptz';
@@ -943,15 +950,14 @@ type ContractBase = Omit<
               uniques: readonly [{ readonly columns: readonly ['token_hash'] }];
               indexes: readonly [
                 {
-                  readonly name: 'project_invites_project_id_idx_6ad92603';
-                  readonly prefix: 'project_invites_project_id_idx';
-                  readonly columns: readonly ['project_id'];
+                  readonly name: 'project_invites_email_idx';
+                  readonly expression: 'lower(email)';
+                  readonly where: '(email IS NOT NULL)';
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'project_invites_email_idx_46df9cad';
-                  readonly prefix: 'project_invites_email_idx';
-                  readonly columns: readonly ['email'];
+                  readonly name: 'project_invites_project_id_idx';
+                  readonly columns: readonly ['project_id'];
                   readonly unique: false;
                 },
               ];
@@ -2013,14 +2019,6 @@ type ContractBase = Omit<
           };
           readonly onCreate: { readonly kind: 'generator'; readonly id: 'timestampNow' };
           readonly onUpdate: { readonly kind: 'generator'; readonly id: 'timestampNow' };
-        },
-        {
-          readonly ref: {
-            readonly namespace: 'public';
-            readonly table: 'project_invites';
-            readonly column: 'id';
-          };
-          readonly onCreate: { readonly kind: 'generator'; readonly id: 'uuidv4' };
         },
         {
           readonly ref: {

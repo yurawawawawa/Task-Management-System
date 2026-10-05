@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/app/lib/supabase/server';
+import { getSafeNextPath } from '@/app/lib/runtime-env';
 import { db } from '@/prisma/db';
+import { recordActivity, recordOperation } from '@/app/lib/admin/telemetry';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/dashboard';
+  const next = getSafeNextPath(searchParams.get('next'));
 
   if (code) {
     const supabase = await createClient();
@@ -36,6 +38,8 @@ export async function GET(request: Request) {
       }
 
       const forwardedHost = request.headers.get('x-forwarded-host');
+      await recordActivity(data.user.id, 'USER_LOGIN', 'user', data.user.id);
+      await recordOperation({ category: 'AUTH', operation: 'auth.oauth.callback', outcome: 'SUCCESS', userId: data.user.id });
       const isLocalEnv = process.env.NODE_ENV === 'development';
 
       if (isLocalEnv) {
@@ -49,5 +53,6 @@ export async function GET(request: Request) {
   }
 
   // Jika gagal, kembalikan ke login dengan pesan error
+  await recordOperation({ category: 'AUTH', operation: 'auth.oauth.callback', outcome: 'FAILURE', code: 'CALLBACK_FAILED' });
   return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
 }

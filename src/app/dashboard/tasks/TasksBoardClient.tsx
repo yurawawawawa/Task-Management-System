@@ -41,6 +41,8 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { createPersonalTask, updateTaskStatus, deleteTask } from '../actions';
 import { useTheme } from '@/app/context/ThemeContext';
+import TreklySelect from '@/app/components/TreklySelect';
+import { TREKLY_PRIORITY_OPTIONS } from '@/app/components/treklySelectOptions';
 
 interface Task {
   id: string;
@@ -855,20 +857,14 @@ export default function TasksBoardClient({ initialTasks }: TasksBoardClientProps
               />
               <div className="flex flex-col sm:flex-row gap-2">
                 <DueDatePicker value={newDueDate} onChange={setNewDueDate} isRetro={isRetro} />
-                <select
+                <TreklySelect
                   value={newPriority}
-                  onChange={(e) => setNewPriority(e.target.value as any)}
-                  className={`px-3.5 py-2.5 rounded-xl text-xs font-black focus:outline-none ${
-                    isRetro
-                      ? 'bg-white border-[2.5px] border-[#1a2e1f] text-[#1a2e1f]'
-                      : 'bg-white border border-slate-200 text-slate-800'
-                  }`}
-                >
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                  <option value="URGENT">Urgent</option>
-                </select>
+                  onChange={setNewPriority}
+                  options={TREKLY_PRIORITY_OPTIONS}
+                  variant="priority"
+                  ariaLabel="Task priority"
+                  className="min-w-[132px] flex-1 sm:flex-none"
+                />
               </div>
             </div>
             <div className="flex items-center justify-end gap-2.5 pt-1">

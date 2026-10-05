@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { redirect } from 'next/navigation';
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
+import { recordActivity } from '@/app/lib/admin/telemetry';
 
 type JoinPageProps = {
   searchParams: Promise<{ token?: string }>;
@@ -48,6 +49,7 @@ export default async function JoinProjectPage({ searchParams }: JoinPageProps) {
         profileId: profile.id,
         role: 'MEMBER',
       });
+      await recordActivity(user.id, 'PROJECT_JOINED', 'project', invite.projectId);
     }
   }
 

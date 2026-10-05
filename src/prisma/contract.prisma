@@ -152,20 +152,49 @@ model DailyActivity {
 // ============================================
 
 model ProjectInvite {
-  id         Uuid              @id @default(uuid())
+  id         Uuid              @id @default(dbgenerated("gen_random_uuid()"))
   projectId  Uuid              @map("project_id")
   email      String?
   tokenHash  String            @unique @map("token_hash")
-  expiresAt  TimestamptzString @default(now()) @map("expires_at")
+  expiresAt  TimestamptzString @default(dbgenerated("(now() + '7 days'::interval)")) @map("expires_at")
   acceptedAt TimestamptzString? @map("accepted_at")
   createdAt  TimestamptzString @default(now()) @map("created_at")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  @@index([projectId])
-  @@index([email])
+  @@index(expression: "lower(email)", map: "project_invites_email_idx", where: "(email IS NOT NULL)")
+  @@index([projectId], map: "project_invites_project_id_idx")
   @@map("project_invites")
   @@rls
+}
+
+policy_insert Project_owners_can_create_project_invites {
+  target = ProjectInvite
+  roles = [authenticated]
+  withCheck = "(EXISTS ( SELECT 1\n   FROM projects\n  WHERE ((projects.id = project_invites.project_id) AND (projects.user_id = auth.uid()))))"
+  @@map("Project owners can create project invites")
+}
+
+policy_delete Project_owners_can_delete_project_invites {
+  target = ProjectInvite
+  roles = [authenticated]
+  using = "(EXISTS ( SELECT 1\n   FROM projects\n  WHERE ((projects.id = project_invites.project_id) AND (projects.user_id = auth.uid()))))"
+  @@map("Project owners can delete project invites")
+}
+
+policy_update Project_owners_can_update_project_invites {
+  target = ProjectInvite
+  roles = [authenticated]
+  using = "(EXISTS ( SELECT 1\n   FROM projects\n  WHERE ((projects.id = project_invites.project_id) AND (projects.user_id = auth.uid()))))"
+  withCheck = "(EXISTS ( SELECT 1\n   FROM projects\n  WHERE ((projects.id = project_invites.project_id) AND (projects.user_id = auth.uid()))))"
+  @@map("Project owners can update project invites")
+}
+
+policy_select Project_owners_can_view_project_invites {
+  target = ProjectInvite
+  roles = [authenticated]
+  using = "(EXISTS ( SELECT 1\n   FROM projects\n  WHERE ((projects.id = project_invites.project_id) AND (projects.user_id = auth.uid()))))"
+  @@map("Project owners can view project invites")
 }
 
 // ============================================

@@ -38,7 +38,12 @@ function LoginForm() {
   const emailParam = searchParams.get('email') || '';
   const existingParam = searchParams.get('existing') === 'true';
   const requestedNext = searchParams.get('next') || '/dashboard';
-  const nextPath = requestedNext.startsWith('/') ? requestedNext : '/dashboard';
+  const nextPath =
+    requestedNext.startsWith('/') &&
+    !requestedNext.startsWith('//') &&
+    !requestedNext.includes('\\')
+      ? requestedNext
+      : '/dashboard';
 
   const passwordParam = searchParams.get('password') || '';
   const [email, setEmail] = useState(emailParam);

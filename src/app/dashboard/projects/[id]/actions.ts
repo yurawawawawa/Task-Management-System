@@ -6,6 +6,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { getAuthUser } from '@/app/lib/supabase/server';
 import { db } from '@/prisma/db';
 import { revalidatePath } from 'next/cache';
+import { recordActivity } from '@/app/lib/admin/telemetry';
 
 export async function addTask(projectId: string, title: string, assigneeId?: string) {
   const user = await getAuthUser();
@@ -14,7 +15,7 @@ export async function addTask(projectId: string, title: string, assigneeId?: str
   const project = await db.orm.public.Project.where({ id: projectId, userId: user.id }).first();
   if (!project) throw new Error('Project not found or unauthorized');
 
-  await db.orm.public.Task.create({
+  const task = await db.orm.public.Task.create({
     userId: user.id,
     projectId,
     title,
@@ -22,6 +23,7 @@ export async function addTask(projectId: string, title: string, assigneeId?: str
     priority: 'MEDIUM',
     assigneeId: assigneeId || null,
   });
+  await recordActivity(user.id, 'TASK_CREATED', 'task', task.id);
 
   revalidatePath(`/dashboard/projects/${projectId}`);
 }
@@ -111,6 +113,7 @@ async function createProjectInvite(projectId: string, email?: string) {
   }
 
   revalidatePath(`/dashboard/projects/${projectId}`);
+  await recordActivity(user.id, 'COLLABORATOR_INVITED', 'project', projectId);
   return { shareUrl, email: normalizedEmail || null };
 }
 
@@ -126,8 +129,19 @@ export async function updateTaskStatus(taskId: string, status: 'TODO' | 'IN_PROG
   const user = await getAuthUser();
   if (!user) throw new Error('Unauthorized');
 
-  // In a real app, you'd check if user has access to task
+  // Match the project page's existing owner/member access policy server-side.
+  const task = await db.orm.public.Task.where({ id: taskId }).first();
+  if (!task) throw new Error('Task not found');
+  if (task.userId !== user.id) {
+    const membership = task.projectId
+      ? await db.orm.public.ProjectMember.where({ projectId: task.projectId, profileId: user.id }).first()
+      : null;
+    if (!membership) throw new Error('Unauthorized');
+  }
   await db.orm.public.Task.where({ id: taskId }).update({ status });
+  if (task.status !== status) {
+    await recordActivity(user.id, status === 'DONE' ? 'TASK_COMPLETED' : 'TASK_UPDATED', 'task', taskId);
+  }
   
   // Since we don't have the project id here easily, we might just revalidate all projects
   revalidatePath('/dashboard/projects/[id]', 'page');

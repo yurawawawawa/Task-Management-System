@@ -45,7 +45,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     const requestedNext = new URLSearchParams(window.location.search).get('next');
-    if (requestedNext?.startsWith('/')) {
+    if (requestedNext?.startsWith('/') && !requestedNext.startsWith('//') && !requestedNext.includes('\\')) {
       setNextPath(requestedNext);
     }
   }, []);

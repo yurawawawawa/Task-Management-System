@@ -1,9 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, CheckCircle2, Circle, Copy, Loader2, MoreHorizontal, Plus, Users } from 'lucide-react';
+import { ArrowLeft, Check, CheckCircle2, Circle, Copy, Loader2, MoreHorizontal, Plus, UserRound, Users } from 'lucide-react';
+import TreklySelect, { type TreklySelectOption } from '@/app/components/TreklySelect';
 import { addTask, createProjectShareLink, inviteCollaborator, updateTaskStatus } from './actions';
+
+type AssigneeOption = TreklySelectOption & {
+  name: string;
+  avatarUrl?: string;
+};
+
+function AssigneeAvatar({ option, size = 'md' }: { option: AssigneeOption; size?: 'sm' | 'md' }) {
+  const sizeClass = size === 'sm' ? 'h-7 w-7 text-[10px]' : 'h-9 w-9 text-xs';
+
+  if (option.value === '') {
+    return (
+      <span className={`${sizeClass} flex shrink-0 items-center justify-center rounded-full border border-[#1a2e1f]/15 bg-[#fbf3e0] text-[#1a2e1f]`}>
+        <UserRound className={size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} strokeWidth={2} />
+      </span>
+    );
+  }
+
+  if (option.avatarUrl) {
+    return (
+      <img
+        src={option.avatarUrl}
+        alt=""
+        className={`${sizeClass} shrink-0 rounded-full border border-[#1a2e1f]/15 object-cover`}
+      />
+    );
+  }
+
+  return (
+    <span className={`${sizeClass} flex shrink-0 items-center justify-center rounded-full border border-[#1a2e1f]/15 bg-[#bfe3f0] font-black uppercase text-[#1a2e1f]`}>
+      {option.name.trim().charAt(0) || '?'}
+    </span>
+  );
+}
 
 export default function ProjectDetailClient({ project, user }: { project: any, user: any }) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -16,6 +50,31 @@ export default function ProjectDetailClient({ project, user }: { project: any, u
   const [error, setError] = useState('');
   
   const [assigneeId, setAssigneeId] = useState('');
+
+  const assigneeOptions = useMemo<AssigneeOption[]>(() => [
+    {
+      value: '',
+      name: 'Unassigned',
+      label: 'Unassigned',
+      icon: <AssigneeAvatar option={{ value: '', name: 'Unassigned', label: 'Unassigned' }} size="sm" />,
+    },
+    {
+      value: project.userId,
+      name: project.user.name,
+      label: `Me (${project.user.name})`,
+      description: 'You',
+      avatarUrl: project.user.avatarUrl || project.user.avatar_url || project.user.avatar,
+      icon: <AssigneeAvatar option={{ value: project.userId, name: project.user.name, label: `Me (${project.user.name})`, avatarUrl: project.user.avatarUrl || project.user.avatar_url || project.user.avatar }} size="sm" />,
+    },
+    ...project.members.map((member: any) => ({
+      value: member.profile.id,
+      name: member.profile.name,
+      label: member.profile.name,
+      description: member.profile.email,
+      avatarUrl: member.profile.avatarUrl || member.profile.avatar_url || member.profile.avatar,
+      icon: <AssigneeAvatar option={{ value: member.profile.id, name: member.profile.name, label: member.profile.name, avatarUrl: member.profile.avatarUrl || member.profile.avatar_url || member.profile.avatar }} size="sm" />,
+    })),
+  ], [project.members, project.user.avatar, project.user.avatar_url, project.user.avatarUrl, project.user.name, project.userId]);
 
   const completedTasks = project.tasks.filter((t: any) => t.status === 'DONE').length;
   const totalTasks = project.tasks.length;
@@ -129,18 +188,8 @@ export default function ProjectDetailClient({ project, user }: { project: any, u
                 placeholder="Write a new task or part..."
                 className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-primary focus:bg-white text-foreground transition-all placeholder:text-muted-foreground/80"
               />
-              <div className="flex gap-3">
-                <select 
-                  value={assigneeId}
-                  onChange={(e) => setAssigneeId(e.target.value)}
-                  className="px-4 py-2 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-primary flex-1"
-                >
-                  <option value="">Unassigned</option>
-                  <option value={project.userId}>Me ({project.user.name})</option>
-                  {project.members.map((m: any) => (
-                    <option key={m.profile.id} value={m.profile.id}>{m.profile.name}</option>
-                  ))}
-                </select>
+              <div className="relative z-20 flex items-start gap-3">
+                <TreklySelect options={assigneeOptions} value={assigneeId} onChange={setAssigneeId} ariaLabel="Assignee" className="flex-1" />
                 <button
                   type="submit"
                   disabled={loadingTask || !newTaskTitle.trim()}
