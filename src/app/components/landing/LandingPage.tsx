@@ -263,7 +263,7 @@ export default function LandingPage({ user, tasks = [], activities = [], current
             >
               Kerja Asik,
               <br />
-              <span className="text-[#ffc93c]">Hidup Santai.</span>
+              <span className="text-[#ffc93c]">Hidup Asik.</span>
             </h1>
 
             <p
@@ -934,7 +934,7 @@ export default function LandingPage({ user, tasks = [], activities = [], current
               TREKLY
             </span>
             <p className="text-xs font-bold uppercase tracking-widest text-[#1a2e1f]/70 mt-0.5">
-              Kerja Asik • Hidup Santai
+              Kerja Asik • Hidup Asik
             </p>
           </div>
 

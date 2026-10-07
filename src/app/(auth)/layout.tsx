@@ -30,7 +30,7 @@ export default function AuthLayout({
             <span>Trekly</span>
           </Link>
           <p className="text-xs font-bold uppercase tracking-widest text-[#1a2e1f]/70 mt-1">
-            Kerja Asik • Hidup Santai
+            Kerja Asik • Hidup Asik
           </p>
         </div>
 
