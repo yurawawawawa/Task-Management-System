@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabasePublicConfig } from './config';
+import { fetchWithSingleNetworkRetry, isRetryableAuthNetworkError } from './network';
 
 const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabasePublicConfig();
 
@@ -34,6 +35,7 @@ export async function updateSession(request: NextRequest) {
     supabaseUrl,
     supabaseAnonKey,
     {
+      global: { fetch: fetchWithSingleNetworkRetry },
       cookieOptions: {
         path: '/',
         sameSite: 'lax',
@@ -62,18 +64,43 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Refresh token & retrieve auth user
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  let user = null;
+  let authError: { name?: string; message?: string; status?: number; code?: string } | null = null;
+  try {
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+    authError = result.error;
+  } catch (error) {
+    const details = {
+      name: error instanceof Error ? error.name : 'UnknownError',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    };
+    const log = isRetryableAuthNetworkError(details) ? console.warn : console.error;
+    log('Supabase middleware session request failed:', details);
+  }
 
   if (authError) {
-    console.error('Supabase middleware session lookup failed:', {
-      name: authError.name,
-      message: authError.message,
-      status: authError.status,
-      code: authError.code,
-    });
+    const isMissingSession =
+      authError.name === 'AuthSessionMissingError' ||
+      authError.message?.toLowerCase() === 'auth session missing!';
+
+    if (!isMissingSession) {
+      const log = isRetryableAuthNetworkError(authError) ? console.warn : console.error;
+      log('Supabase middleware session lookup failed:', {
+        name: authError.name,
+        message: authError.message,
+        status: authError.status,
+        code: authError.code,
+      });
+    }
+
+    // A stale/partial auth cookie is not a server failure. Clear it so the
+    // next request is treated as an anonymous visit and can start fresh.
+    if (isMissingSession) {
+      request.cookies.getAll()
+        .filter((cookie) => cookie.name.startsWith('sb-'))
+        .forEach((cookie) => supabaseResponse.cookies.delete(cookie.name));
+    }
   }
 
   const pathname = request.nextUrl.pathname;

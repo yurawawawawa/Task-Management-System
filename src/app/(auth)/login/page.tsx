@@ -38,6 +38,7 @@ function LoginForm() {
   const emailParam = searchParams.get('email') || '';
   const existingParam = searchParams.get('existing') === 'true';
   const requestedNext = searchParams.get('next') || '/dashboard';
+  const hasExplicitNext = searchParams.has('next');
   const nextPath =
     requestedNext.startsWith('/') &&
     !requestedNext.startsWith('//') &&
@@ -107,8 +108,15 @@ function LoginForm() {
         throw new Error(data.error || 'Email atau password salah');
       }
 
+      // Admin masuk ke Control Center secara default. Tetap hormati `next`
+      // yang memang diminta oleh flow tertentu (mis. kembali ke halaman yang
+      // sebelumnya membutuhkan autentikasi).
+      const destination = !hasExplicitNext && data.user?.role === 'ADMIN'
+        ? '/admin'
+        : nextPath;
+
       // Gunakan hard redirect supaya cookie sesi baru langsung terbaca middleware.
-      window.location.href = nextPath;
+      window.location.href = destination;
     } catch (err: any) {
       setError(err.message);
       setLoading(false);

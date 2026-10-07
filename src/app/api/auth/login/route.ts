@@ -4,6 +4,7 @@ import { createClient } from '@/app/lib/supabase/server';
 import { loginSchema } from '@/app/lib/validations/auth';
 import { db } from '@/prisma/db';
 import { recordActivity } from '@/app/lib/admin/telemetry';
+import { readJson, sql } from '@/app/lib/admin/sql';
 
 function getErrorDetails(error: unknown) {
   if (error instanceof Error) {
@@ -77,6 +78,18 @@ async function handlePOST(request: Request) {
         );
       }
 
+      const authErrorCode = typeof authError.code === 'string' ? authError.code.toLowerCase() : '';
+      const authErrorMessage = authError.message.toLowerCase();
+      const isEmailNotConfirmed =
+        authErrorCode === 'email_not_confirmed' || authErrorMessage.includes('email not confirmed');
+
+      if (isEmailNotConfirmed) {
+        return NextResponse.json(
+          { error: 'Email belum dikonfirmasi. Cek inbox atau folder spam, lalu klik link verifikasi dari Supabase.' },
+          { status: 403 },
+        );
+      }
+
       const isCredentialError = [400, 401, 422].includes(authError.status ?? 0);
 
       if (isCredentialError) {
@@ -111,10 +124,16 @@ async function handlePOST(request: Request) {
         });
       }
 
+      // The generated Prisma contract predates the additive admin migration,
+      // so read the authorization role through the server-only raw SQL lane.
+      const roleProfile = await readJson<{ role: string } | null>(sql`
+        SELECT coalesce((SELECT json_build_object('role', role)
+          FROM public.profiles WHERE id = ${authData.user.id}::uuid), 'null'::json)::text AS payload`);
+
       await recordActivity(authData.user.id, 'USER_LOGIN', 'user', authData.user.id);
       return NextResponse.json({
         message: 'Logged in successfully',
-        user: profile,
+        user: { ...profile, role: roleProfile?.role ?? 'USER' },
       });
     } catch (error) {
       console.error('Login profile sync failed:', getErrorDetails(error));
