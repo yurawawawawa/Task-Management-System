@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Trekly — Kerja Asik, Hidup Santai",
+  title: "Trekly — Kerja Asik, Hidup Asik",
   description: "Manajemen tugas dan proyek anti-ribet dengan papan Kanban interaktif, heatmap produktivitas, dan kolaborasi tim tanpa stres.",
   icons: {
     icon: [

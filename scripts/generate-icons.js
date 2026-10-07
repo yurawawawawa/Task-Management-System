@@ -119,7 +119,7 @@ async function main() {
 
   // Generate Web App Manifest
   const manifest = {
-    name: "Trekly — Kerja Asik, Hidup Santai",
+    name: "Trekly — Kerja Asik, Hidup Asik",
     short_name: "Trekly",
     description: "Personal productivity, habit tracker, and gamified streak system.",
     start_url: "/",
