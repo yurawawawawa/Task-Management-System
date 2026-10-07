@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 import { getSupabasePublicConfig } from './config';
+import { fetchWithSingleNetworkRetry, isRetryableAuthNetworkError } from './network';
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -12,6 +13,7 @@ export async function createClient() {
     url,
     anonKey,
     {
+      global: { fetch: fetchWithSingleNetworkRetry },
       cookieOptions: {
         path: '/',
         sameSite: 'lax',
@@ -58,22 +60,35 @@ export const getAuthUser = cache(async function getAuthUser() {
     return null;
   }
 
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error) {
-    console.error('Supabase session lookup failed:', {
-      name: error.name,
-      message: error.message,
-      status: error.status,
-      code: error.code,
-    });
-    return null;
-  }
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
 
-  if (!user) {
+    if (error) {
+      const isMissingSession =
+        error.name === 'AuthSessionMissingError' ||
+        error.message.toLowerCase() === 'auth session missing!';
+
+      if (!isMissingSession) {
+        const log = isRetryableAuthNetworkError(error) ? console.warn : console.error;
+        log('Supabase session lookup failed:', {
+          name: error.name,
+          message: error.message,
+          status: error.status,
+          code: error.code,
+        });
+      }
+      return null;
+    }
+
+    return user ?? null;
+  } catch (error) {
+    const details = {
+      name: error instanceof Error ? error.name : 'UnknownError',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    };
+    const log = isRetryableAuthNetworkError(details) ? console.warn : console.error;
+    log('Supabase session lookup request failed:', details);
     return null;
   }
-  
-  return user;
 });
